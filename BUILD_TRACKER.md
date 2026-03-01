@@ -11,23 +11,31 @@
 
 ## WEEK 1: CORE LOOP (Mar 1-7)
 **Goal:** Click → Earn → Hatch → Passively earn
-**Status:** 🟡 In Progress (0%)
+**Status:** 🟡 In Progress (40%)
 
-### Day 1-2: Gameplay Core [0%]
-- [ ] Player data system (coins, pets, rebirths)
-- [ ] DataStore save/load
-- [ ] Click to earn coins
-- [ ] Server-side coin validation
-**Agent:** gameplay-code-1
-**ETA:** Mar 2, 2026
+### Day 1-2: Gameplay Core [100%] ✅
+- [x] Player data system (coins, pets, rebirths) - PlayerData.lua (318 lines)
+- [x] DataStore save/load - Auto-save 60s + on exit
+- [x] Click to earn coins - Rate-limited 10/sec
+- [x] Server-side coin validation - Server-authoritative
+- [x] 25 Creatures config - CreatureConfig.lua (365 lines)
+- [x] 5 Egg types with RNG - HatchSystem.lua (324 lines)
+- [x] Passive income system - Every 5s from pets - PassiveIncome.lua (124 lines)
+- [x] Click handler - ClickHandler.lua (204 lines)
+- [x] Rebirth bonus (+10% per rebirth) - Main.server.lua (205 lines)
+**Agent:** gameplay-code-w1
+**ETA:** Mar 2, 2026 ✅ COMPLETE (110 min)
 
-### Day 3-4: UI Foundation [0%]
-- [ ] Click button with particle effects
-- [ ] Coin counter UI (animated)
-- [ ] Pet display (equipped pet)
-- [ ] Sound on click
+### Day 3-4: UI Foundation [100%]
+- [x] Click button with particle effects (200x200, juicy animations)
+- [x] Coin counter UI (animated, flying coins, number ticking)
+- [x] Pet display (equipped pet with multiplier, bounce animation)
+- [x] Sound on click (cha-ching, pop, equip sounds)
+- [x] Screen shake on big earnings
+- [x] Settings menu (sound/particles toggle)
+- [x] Hatch shop UI with hatching animation
 **Agent:** ui-code-1
-**ETA:** Mar 4, 2026
+**ETA:** Mar 4, 2026 ✅ COMPLETE
 
 ### Day 5-7: Hatch System [0%]
 - [ ] Egg shop (5 egg types)
@@ -158,7 +166,7 @@
 | Agent | Current Task | Status | ETA |
 |-------|-------------|--------|-----|
 | gameplay-code-w1 | Player data + clicking | 🟡 Running | Mar 2 |
-| ui-code-w1 | Click button + particles | 🟡 Running | Mar 4 |
+| ui-code-w1 | Click button + particles | ✅ COMPLETE | Mar 1 |
 | validation-1 | Testing Week 1 build | ⬜ Waiting | Mar 7 |
 
 ---
@@ -169,7 +177,19 @@
 - ✅ Project approved (Option A - Simple)
 - ✅ Build tracker created
 - ✅ Week 1 plan finalized
-- 🟡 Spawning code agents
+- ✅ UI Code Agent COMPLETE: ClickerUI.lua + HatchShopUI.lua
+  - 200x200 juicy click button with press animation
+  - Particle effects (12 sparkles on click)
+  - Flying coins from button to counter
+  - Animated coin counter with number ticking
+  - Pet display with bounce animation
+  - Sound effects (cha-ching, pop, equip)
+  - Screen shake on big earnings (100+ coins)
+  - Settings menu (sound/particles toggles)
+  - Hatch shop with 5 egg types
+  - Hatching animation with egg shake
+  - Rarity glow effects (Epic+ gets spinning glow)
+  - Mobile-friendly touch targets
 
 ### Mar 2, 2026 (Mon)
 - ⬜ Pending

@@ -1,0 +1,205 @@
+--[[
+    Main Server Script
+    Initializes all gameplay systems and handles cross-module communication
+    Place this in ServerScriptService
+]]
+
+local ServerScriptService = game:GetService("ServerScriptService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Load modules
+local modulesFolder = script.Parent:WaitForChild("Modules")
+
+local CreatureConfig = require(modulesFolder.CreatureConfig)
+local PlayerData = require(modulesFolder.PlayerData)
+local ClickHandler = require(modulesFolder.ClickHandler)
+local HatchSystem = require(modulesFolder.HatchSystem)
+local PassiveIncome = require(modulesFolder.PassiveIncome)
+
+-- Initialize all systems
+print("=== Creature Clicker Server Starting ===")
+
+-- 1. Initialize PlayerData (must be first)
+PlayerData.Init()
+
+-- 2. Initialize ClickHandler
+ClickHandler.Init(PlayerData, CreatureConfig)
+
+-- 3. Initialize HatchSystem
+HatchSystem.Init(PlayerData, CreatureConfig)
+
+-- 4. Initialize PassiveIncome
+PassiveIncome.Init(PlayerData, CreatureConfig)
+
+print("=== All Systems Initialized ===")
+
+-- Setup additional RemoteEvents/Functions
+local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes")
+
+-- GetCreatures remote (for inventory display)
+local GetCreatures = remotesFolder:FindFirstChild("GetCreatures")
+if not GetCreatures then
+    GetCreatures = Instance.new("RemoteFunction")
+    GetCreatures.Name = "GetCreatures"
+    GetCreatures.Parent = remotesFolder
+end
+
+GetCreatures.OnServerInvoke = function(player)
+    return HatchSystem.GetPlayerPets(player)
+end
+
+-- EquipPet remote
+local EquipPet = remotesFolder:FindFirstChild("EquipPet")
+if not EquipPet then
+    EquipPet = Instance.new("RemoteFunction")
+    EquipPet.Name = "EquipPet"
+    EquipPet.Parent = remotesFolder
+end
+
+EquipPet.OnServerInvoke = function(player, creatureId)
+    if typeof(creatureId) ~= "string" then
+        return {success = false, error = "Invalid creature ID"}
+    end
+    
+    local success = HatchSystem.HandleEquipRequest(player, creatureId)
+    return {
+        success = success,
+        equipped = success and creatureId or nil
+    }
+end
+
+-- UnequipPet remote
+local UnequipPet = remotesFolder:FindFirstChild("UnequipPet")
+if not UnequipPet then
+    UnequipPet = Instance.new("RemoteFunction")
+    UnequipPet.Name = "UnequipPet"
+    UnequipPet.Parent = remotesFolder
+end
+
+UnequipPet.OnServerInvoke = function(player)
+    local success = HatchSystem.HandleUnequipRequest(player)
+    return {success = success}
+end
+
+-- GetPassiveIncomePreview remote
+local GetPassiveIncomePreview = remotesFolder:FindFirstChild("GetPassiveIncomePreview")
+if not GetPassiveIncomePreview then
+    GetPassiveIncomePreview = Instance.new("RemoteFunction")
+    GetPassiveIncomePreview.Name = "GetPassiveIncomePreview"
+    GetPassiveIncomePreview.Parent = remotesFolder
+end
+
+GetPassiveIncomePreview.OnServerInvoke = function(player)
+    return PassiveIncome.GetIncomePreview(player)
+end
+
+-- GetCreatureConfig remote (for UI reference)
+local GetCreatureConfig = remotesFolder:FindFirstChild("GetCreatureConfig")
+if not GetCreatureConfig then
+    GetCreatureConfig = Instance.new("RemoteFunction")
+    GetCreatureConfig.Name = "GetCreatureConfig"
+    GetCreatureConfig.Parent = remotesFolder
+end
+
+GetCreatureConfig.OnServerInvoke = function(player)
+    -- Return safe copy of config data
+    local config = {}
+    
+    -- Rarities
+    config.Rarities = {}
+    for name, data in pairs(CreatureConfig.Rarities) do
+        config.Rarities[name] = {
+            multiplier = data.multiplier,
+            chancePercent = data.chancePercent,
+            color = {r = data.color.R, g = data.color.G, b = data.color.B}
+        }
+    end
+    
+    -- Creatures (just names and IDs for reference)
+    config.Creatures = {}
+    for id, creature in pairs(CreatureConfig.Creatures) do
+        config.Creatures[id] = {
+            name = creature.name,
+            element = creature.element,
+            rarity = creature.rarity,
+            multiplier = creature.multiplier
+        }
+    end
+    
+    -- Eggs
+    config.Eggs = {}
+    for id, egg in pairs(CreatureConfig.Eggs) do
+        config.Eggs[id] = {
+            id = egg.id,
+            name = egg.name,
+            cost = egg.cost,
+            description = egg.description,
+            allowedElements = egg.allowedElements
+        }
+    end
+    
+    return config
+end
+
+-- Admin/Debug commands (optional, remove for production)
+local function onPlayerCommand(player, message)
+    if message:sub(1, 1) ~= "/" then return end
+    
+    local args = message:split(" ")
+    local cmd = args[1]:lower()
+    
+    -- /givecoins [amount] - Admin only
+    if cmd == "/givecoins" then
+        -- In production, check if player is admin
+        local session = PlayerData.GetSession(player.UserId)
+        if session then
+            local amount = tonumber(args[2]) or 1000
+            session:AddCoins(amount)
+            print(string.format("[Admin] Gave %s %d coins", player.Name, amount))
+        end
+    end
+    
+    -- /resetdata - Reset player data
+    if cmd == "/resetdata" then
+        local session = PlayerData.GetSession(player.UserId)
+        if session then
+            session.data = {
+                coins = 0,
+                pets = {},
+                rebirths = 0,
+                equipped = nil,
+                stats = {
+                    totalClicks = 0,
+                    totalCoinsEarned = 0,
+                    creaturesHatched = 0,
+                    joinTime = os.time()
+                }
+            }
+            session:Save()
+            print(string.format("[Admin] Reset data for %s", player.Name))
+        end
+    end
+end
+
+Players.PlayerChatted:Connect(onPlayerCommand)
+
+-- Handle player leaving cleanup
+Players.PlayerRemoving:Connect(function(player)
+    ClickHandler.CleanupPlayer(player.UserId)
+end)
+
+print("[Main] Server fully operational")
+
+-- Keep script alive
+while true do
+    task.wait(60)
+    
+    -- Health check
+    local activeSessions = 0
+    for _ in pairs(PlayerData.Sessions) do
+        activeSessions = activeSessions + 1
+    end
+    
+    print(string.format("[Health] Active sessions: %d", activeSessions))
+end
