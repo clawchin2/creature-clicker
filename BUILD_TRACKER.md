@@ -48,8 +48,19 @@
   - [x] Admin command security (Main.server.lua)
   - [x] Client-Server RemoteEvents sync
   - [x] Egg price mismatch fixed
-- [ ] Economy balancing
-**Agents:** validation-week1 + fixes
+- [x] Rojo project.json fixed - UI connected
+- [x] Gameplay Simulation - Fun rating 2/10
+- [x] Designer Agent analysis - Root causes identified
+- [ ] Economy rebalancing - 🟡 Gameplay Code Agent running
+  - [ ] Base click: 1 -> 5 coins
+  - [ ] Egg prices reduced
+  - [ ] First egg guarantee Rare+
+  - [ ] Starter coins: 0 -> 5
+- [ ] UI feedback improvements - 🟡 UI Code Agent running
+  - [ ] +X coin popup on click
+  - [ ] Creature idle animation
+  - [ ] Coins/sec display
+**Agents:** gameplay-economy-fix + ui-feedback-fix
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
