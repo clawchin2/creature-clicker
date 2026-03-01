@@ -142,7 +142,13 @@ GetCreatureConfig.OnServerInvoke = function(player)
     return config
 end
 
--- Admin/Debug commands (optional, remove for production)
+-- Admin/Debug commands
+local ADMIN_USER_IDS = {} -- Add UserIds here: {12345678, 87654321}
+
+local function isAdmin(player)
+    return table.find(ADMIN_USER_IDS, player.UserId) ~= nil
+end
+
 local function onPlayerCommand(player, message)
     if message:sub(1, 1) ~= "/" then return end
     
@@ -151,7 +157,10 @@ local function onPlayerCommand(player, message)
     
     -- /givecoins [amount] - Admin only
     if cmd == "/givecoins" then
-        -- In production, check if player is admin
+        if not isAdmin(player) then
+            print(string.format("[Admin] Unauthorized attempt by %s", player.Name))
+            return
+        end
         local session = PlayerData.GetSession(player.UserId)
         if session then
             local amount = tonumber(args[2]) or 1000
@@ -160,8 +169,12 @@ local function onPlayerCommand(player, message)
         end
     end
     
-    -- /resetdata - Reset player data
+    -- /resetdata - Reset player data (admin only)
     if cmd == "/resetdata" then
+        if not isAdmin(player) then
+            print(string.format("[Admin] Unauthorized attempt by %s", player.Name))
+            return
+        end
         local session = PlayerData.GetSession(player.UserId)
         if session then
             session.data = {

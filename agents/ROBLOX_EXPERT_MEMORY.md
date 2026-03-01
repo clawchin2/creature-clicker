@@ -91,10 +91,21 @@ Find and curate Roblox free models, assets, sounds, images, and decals for games
 ## CURATION LOG
 
 ### Found Assets:
-None yet - fresh start.
+- 2026-03-01: Comprehensive search strategy document created for 25 creatures
+- Detailed search terms compiled for all 5 elements × 5 rarities
+- Quality criteria and recoloring strategy documented
+- Report saved to: creature_models_search_report.md
 
 ### Rejected Assets:
 None yet.
+
+### Asset ID Collection Status:
+Direct web scraping of Roblox asset IDs not feasible due to:
+- Roblox's anti-scraping measures
+- Asset IDs not indexed by search engines
+- Frequent asset availability changes
+
+Recommended approach: Manual Toolbox search using provided keywords.
 
 ## BEST PRACTICES
 

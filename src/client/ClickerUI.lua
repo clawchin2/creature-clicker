@@ -11,12 +11,15 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- RemoteEvents (will be created by Gameplay Agent)
-local Remotes = ReplicatedStorage:WaitForChild("Remotes", 10) or Instance.new("Folder")
-Remotes.Name = "Remotes"
-Remotes.Parent = ReplicatedStorage
+-- RemoteEvents (match server naming)
+local Remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 10)
+if not Remotes then
+	warn("[ClickerUI] CreatureClickerRemotes not found, waiting...")
+	Remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
+end
 
-local ClickEvent = Remotes:WaitForChild("ClickEvent", 10)
+local ClickRequest = Remotes:WaitForChild("ClickRequest", 10)
+local ClickResponse = Remotes:WaitForChild("ClickResponse", 10)
 local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 10)
 
 -- UI References
@@ -287,11 +290,11 @@ local function handleClick()
 	end)
 	
 	-- Call server
-	if ClickEvent then
-		ClickEvent:FireServer()
+	if ClickRequest then
+		ClickRequest:FireServer()
 	else
 		-- Mock response for testing
-		print("[UI] ClickEvent not available, using mock")
+		print("[UI] ClickRequest not available, using mock")
 		local mockCoins = math.random(5, 25)
 		onCoinsEarned(mockCoins, Vector2.new(centerX, centerY))
 	end
@@ -676,10 +679,9 @@ end
 
 -- Listen for server events
 local function connectRemoteEvents()
-	if ClickEvent then
-		-- Listen for click responses
-		-- Note: ClickEvent is a RemoteEvent, server fires back with result
-		ClickEvent.OnClientEvent:Connect(function(coinsEarned)
+	if ClickResponse then
+		-- Listen for click responses from server
+		ClickResponse.OnClientEvent:Connect(function(coinsEarned)
 			local buttonPos = clickButton.AbsolutePosition
 			local buttonSize = clickButton.AbsoluteSize
 			onCoinsEarned(coinsEarned, Vector2.new(
@@ -690,7 +692,7 @@ local function connectRemoteEvents()
 	end
 	
 	-- Listen for passive income updates
-	local PassiveIncomeEvent = Remotes:WaitForChild("PassiveIncomeEvent", 5)
+	local PassiveIncomeEvent = Remotes:WaitForChild("PassiveIncome", 5)
 	if PassiveIncomeEvent then
 		PassiveIncomeEvent.OnClientEvent:Connect(function(amount)
 			currentCoins = currentCoins + amount
@@ -701,7 +703,7 @@ local function connectRemoteEvents()
 	end
 	
 	-- Listen for pet equipped updates
-	local PetEquippedEvent = Remotes:WaitForChild("PetEquippedEvent", 5)
+	local PetEquippedEvent = Remotes:WaitForChild("PetEquipped", 5)
 	if PetEquippedEvent then
 		PetEquippedEvent.OnClientEvent:Connect(function(petData)
 			updateEquippedPet(petData)

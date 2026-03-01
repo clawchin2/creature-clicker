@@ -35,6 +35,19 @@ local DEFAULT_DATA = {
     }
 }
 
+-- Deep copy function (replaces table.clone)
+local function deepCopy(original)
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            copy[k] = deepCopy(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
+end
+
 -- Create new player data session
 function PlayerData.new(player)
     local self = setmetatable({}, PlayerData)
@@ -61,7 +74,7 @@ function PlayerData:Load()
             self.data = self:MergeWithDefaults(result)
         else
             -- New player
-            self.data = table.clone(DEFAULT_DATA)
+            self.data = deepCopy(DEFAULT_DATA)
             self.data.stats.joinTime = os.time()
         end
         
@@ -70,7 +83,7 @@ function PlayerData:Load()
         return true
     else
         warn(string.format("[PlayerData] Failed to load data for %s: %s", self.player.Name, tostring(result)))
-        self.data = table.clone(DEFAULT_DATA)
+        self.data = deepCopy(DEFAULT_DATA)
         self.loaded = false
         return false
     end
@@ -78,7 +91,7 @@ end
 
 -- Merge saved data with defaults
 function PlayerData:MergeWithDefaults(savedData)
-    local merged = table.clone(DEFAULT_DATA)
+    local merged = deepCopy(DEFAULT_DATA)
     
     for key, value in pairs(savedData) do
         if typeof(value) == "table" and typeof(merged[key]) == "table" then

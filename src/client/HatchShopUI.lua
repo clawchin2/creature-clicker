@@ -9,18 +9,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Remotes
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
-local BuyEggEvent = Remotes:WaitForChild("BuyEgg")
-local GetPlayerData = Remotes:WaitForChild("GetPlayerData")
+-- Remotes (match server naming)
+local Remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 10)
+local HatchRequest = Remotes:WaitForChild("HatchRequest", 10)
+local HatchResult = Remotes:WaitForChild("HatchResult", 10)
+local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 10)
 
 -- UI State
 local shopUI = nil
 local isHatching = false
 
--- Egg definitions (should match server)
+-- Egg definitions (matches server CreatureConfig.Eggs)
 local EGGS = {
 	{
+		id = "basic_egg",
 		name = "Basic Egg",
 		price = 100,
 		color = Color3.fromRGB(200, 200, 200),
@@ -28,32 +30,36 @@ local EGGS = {
 		rarities = {Common = 70, Uncommon = 25, Rare = 5}
 	},
 	{
+		id = "fire_egg",
 		name = "Fire Egg",
-		price = 500,
+		price = 250,
 		color = Color3.fromRGB(255, 100, 50),
 		description = "Fire element creatures!",
 		rarities = {Common = 50, Uncommon = 35, Rare = 12, Epic = 3}
 	},
 	{
+		id = "water_egg",
 		name = "Water Egg",
-		price = 500,
+		price = 250,
 		color = Color3.fromRGB(50, 150, 255),
 		description = "Water element creatures!",
 		rarities = {Common = 50, Uncommon = 35, Rare = 12, Epic = 3}
 	},
 	{
-		name = "Mystery Egg",
-		price = 2000,
-		color = Color3.fromRGB(170, 85, 255),
-		description = "Better chances for rare creatures!",
-		rarities = {Uncommon = 40, Rare = 35, Epic = 20, Legendary = 5}
+		id = "earth_egg",
+		name = "Earth Egg",
+		price = 250,
+		color = Color3.fromRGB(100, 255, 100),
+		description = "Earth element creatures!",
+		rarities = {Common = 50, Uncommon = 35, Rare = 12, Epic = 3}
 	},
 	{
-		name = "Legendary Egg",
-		price = 10000,
-		color = Color3.fromRGB(255, 215, 0),
-		description = "Highest chance for legendary!",
-		rarities = {Rare = 50, Epic = 35, Legendary = 15}
+		id = "void_egg",
+		name = "Void Egg",
+		price = 500,
+		color = Color3.fromRGB(170, 85, 255),
+		description = "Higher chance for rare creatures!",
+		rarities = {Common = 50, Uncommon = 30, Rare = 20, Epic = 8, Legendary = 2}
 	}
 }
 
@@ -374,7 +380,7 @@ function buyEgg(eggData)
 	
 	-- Server call for actual hatch
 	local success, result = pcall(function()
-		return BuyEggEvent:InvokeServer(eggData.name)
+		return HatchRequest:InvokeServer(eggData.id)
 	end)
 	
 	-- Wait for animation
