@@ -64,7 +64,7 @@
 - [x] Validation re-test - ✅ COMPLETE
   - Server-side: All 5 fixes verified working
   - Client-side: Files in src/client/ (Validation looked in wrong path)
-- [ ] Gameplay Simulation re-test - ⬜ NEXT
+- [ ] Gameplay Simulation re-test - 🟡 RUNNING
 **Agents:** gameplay-sim-final
 **ETA:** Mar 7, 2026
 
