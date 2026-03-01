@@ -51,16 +51,18 @@
 - [x] Rojo project.json fixed - UI connected
 - [x] Gameplay Simulation - Fun rating 2/10
 - [x] Designer Agent analysis - Root causes identified
-- [ ] Economy rebalancing - 🟡 Gameplay Code Agent running
-  - [ ] Base click: 1 -> 5 coins
-  - [ ] Egg prices reduced
-  - [ ] First egg guarantee Rare+
-  - [ ] Starter coins: 0 -> 5
-- [ ] UI feedback improvements - 🟡 UI Code Agent running
-  - [ ] +X coin popup on click
-  - [ ] Creature idle animation
-  - [ ] Coins/sec display
-**Agents:** gameplay-economy-fix + ui-feedback-fix
+- [x] Economy rebalancing - ✅ COMPLETE
+  - [x] Base click: 1 -> 5 coins
+  - [x] Egg prices: Basic 10, Elements 50, Void 150
+  - [x] First egg guarantee Rare+
+  - [x] Starter coins: 0 -> 5
+- [x] UI feedback improvements - ✅ COMPLETE
+  - [x] +X coin popup on click (floats up, gold)
+  - [x] Creature idle animation (pulse/bounce)
+  - [x] Coins/sec display (+X/sec label)
+  - [x] Sound safety checks
+- [ ] Validation re-test - ⬜ NEXT
+**Agents:** gameplay-economy-fix + ui-feedback-fix ✅
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
