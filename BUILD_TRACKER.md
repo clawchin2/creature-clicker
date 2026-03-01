@@ -61,8 +61,9 @@
   - [x] Creature idle animation (pulse/bounce)
   - [x] Coins/sec display (+X/sec label)
   - [x] Sound safety checks
-- [ ] Validation re-test - ⬜ NEXT
-**Agents:** gameplay-economy-fix + ui-feedback-fix ✅
+- [ ] Validation re-test - 🟡 RUNNING
+- [ ] Gameplay Simulation re-test - ⬜ NEXT
+**Agents:** validation-optionb → gameplay-sim-final
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
