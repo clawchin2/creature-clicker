@@ -37,12 +37,15 @@
 **Agent:** ui-code-1
 **ETA:** Mar 4, 2026 ✅ COMPLETE
 
-### Day 5-7: Hatch System [0%]
-- [ ] Egg shop (5 egg types)
-- [ ] Hatching animation
-- [ ] RNG rarity system
-- [ ] Passive income from pets
-**Agents:** gameplay-code-1 + ui-code-1
+### Day 5-7: Integration & Validation [🟡 IN PROGRESS]
+- [x] Egg shop (5 egg types) - Server & Client
+- [x] Hatching animation - UI complete
+- [x] RNG rarity system - Server complete
+- [x] Passive income from pets - Server complete
+- [ ] Validation Agent testing - 🟡 RUNNING
+- [ ] Bug fixes based on validation
+- [ ] Economy balancing
+**Agents:** validation-week1
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
@@ -165,9 +168,9 @@
 
 | Agent | Current Task | Status | ETA |
 |-------|-------------|--------|-----|
-| gameplay-code-w1 | Player data + clicking | 🟡 Running | Mar 2 |
+| gameplay-code-w1 | Player data + clicking | ✅ COMPLETE | Mar 1 |
 | ui-code-w1 | Click button + particles | ✅ COMPLETE | Mar 1 |
-| validation-1 | Testing Week 1 build | ⬜ Waiting | Mar 7 |
+| validation-week1 | Testing Week 1 integration | 🟡 RUNNING | Mar 1 |
 
 ---
 

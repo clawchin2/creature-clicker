@@ -31,6 +31,37 @@
 
 ---
 
+## VALIDATION PROTOCOL
+
+**MANDATORY:** Validation Agent tests EVERY code update/change/addition.
+
+### When to Spawn Validation Agent:
+- [ ] After Gameplay Code Agent completes feature
+- [ ] After UI Code Agent completes feature
+- [ ] After ANY file edit (even 1-line fixes)
+- [ ] Before user testing
+- [ ] Before GitHub Actions build
+
+### Validation Checklist:
+- [ ] Code runs without errors
+- [ ] No exploits possible (rate limiting, validation)
+- [ ] Economy math is correct
+- [ ] UI responds correctly
+- [ ] DataStore saves/loads properly
+- [ ] Edge cases handled (nil values, disconnects)
+
+### Validation Report Format:
+```
+[CRITICAL] - Must fix before ship (crashes, exploits)
+[MAJOR] - Fix now (bugs, broken features)
+[MINOR] - Fix later (cosmetic, optimization)
+```
+
+### No Validation = No Ship
+Builds only proceed after Validation Agent approval.
+
+---
+
 ## DIRECTOR DECISION TREE
 
 ### User says: "Add [feature]"
