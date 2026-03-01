@@ -78,8 +78,13 @@ function HatchSystem.GetModifiedWeights(eggType)
     return weights
 end
 
--- Roll for rarity
-function HatchSystem.RollRarity(eggType)
+-- Roll for rarity (with optional forceRare for first egg guarantee)
+function HatchSystem.RollRarity(eggType, forceRare)
+    -- First egg guarantee: always give Rare rarity
+    if forceRare then
+        return "Rare"
+    end
+    
     local weights = HatchSystem.GetModifiedWeights(eggType)
     local totalWeight = 0
     
@@ -168,8 +173,16 @@ function HatchSystem.HatchEgg(player, eggType)
         element = elements[rng:NextInteger(1, #elements)]
     end
     
-    -- Roll rarity
-    local rarity = HatchSystem.RollRarity(eggType)
+    -- Check if this is the player's first egg ever
+    local isFirstEgg = session:IsFirstEgg()
+    
+    -- Roll rarity (guarantee Rare for first egg)
+    local rarity = HatchSystem.RollRarity(eggType, isFirstEgg)
+    
+    -- Mark first egg as hatched
+    if isFirstEgg then
+        session:MarkFirstEggHatched()
+    end
     
     -- Get creature
     local creature = HatchSystem.GetRandomCreature(element, rarity)

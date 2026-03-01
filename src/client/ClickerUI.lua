@@ -34,6 +34,8 @@ local settingsButton = nil
 local currentCoins = 0
 local displayedCoins = 0
 local equippedPet = nil
+local currentCoinsPerSecond = 0
+local idleTween = nil
 local settings = {
 	soundEnabled = true,
 	particlesEnabled = true
@@ -48,7 +50,10 @@ local CONFIG = {
 	SCREEN_SHAKE_THRESHOLD = 100, -- coins earned to trigger screen shake
 	FLYING_COIN_COUNT = 5,
 	FLYING_COIN_DURATION = 0.6,
-	PARTICLE_COUNT = 12
+	PARTICLE_COUNT = 12,
+	CLICK_FEEDBACK_DURATION = 0.5,
+	IDLE_ANIMATION_SCALE = 1.05,
+	IDLE_ANIMATION_TIME = 2
 }
 
 -- Sound Effects (using Roblox default sounds for now)
@@ -146,6 +151,110 @@ local function createParticles(position, color)
 	delay(1, function()
 		particleFolder:Destroy()
 	end)
+end
+
+-- Click Feedback Popup (+X text)
+local function createClickFeedback(amount, position)
+	local feedback = Instance.new("TextLabel")
+	feedback.Name = "ClickFeedback"
+	feedback.Size = UDim2.new(0, 100, 0, 40)
+	feedback.Position = UDim2.new(0, position.X - 50 + math.random(-20, 20), 0, position.Y - 50 + math.random(-10, 10))
+	feedback.BackgroundTransparency = 1
+	feedback.Text = "+" .. amount
+	feedback.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold color
+	feedback.TextScaled = true
+	feedback.Font = Enum.Font.GothamBlack
+	feedback.TextStrokeTransparency = 0.5
+	feedback.TextStrokeColor3 = Color3.fromRGB(150, 100, 0)
+	feedback.Parent = mainUI
+	
+	-- Float up and fade out tween
+	local tweenInfo = TweenInfo.new(
+		CONFIG.CLICK_FEEDBACK_DURATION,
+		Enum.EasingStyle.Quad,
+		Enum.EasingDirection.Out
+	)
+	
+	local tween = TweenService:Create(feedback, tweenInfo, {
+		Position = UDim2.new(0, feedback.Position.X.Offset, 0, feedback.Position.Y.Offset - 60),
+		TextTransparency = 1,
+		TextStrokeTransparency = 1
+	})
+	
+	tween:Play()
+	tween.Completed:Connect(function()
+		feedback:Destroy()
+	end)
+end
+
+-- Pet Idle Animation (bounce/pulse loop)
+local function startIdleAnimation()
+	if not petDisplay or not petDisplay.PetImage then return end
+	
+	-- Stop existing animation
+	if idleTween then
+		idleTween:Cancel()
+		idleTween = nil
+	end
+	
+	local petImage = petDisplay.PetImage
+	local originalSize = UDim2.new(0, 50, 0, 50) -- Base size
+	
+	-- Scale up tween
+	local scaleUpInfo = TweenInfo.new(
+		CONFIG.IDLE_ANIMATION_TIME / 2,
+		Enum.EasingStyle.Sine,
+		Enum.EasingDirection.InOut
+	)
+	
+	local function animateIdle()
+		local scaleUp = TweenService:Create(petImage, scaleUpInfo, {
+			Size = UDim2.new(0, originalSize.X.Offset * CONFIG.IDLE_ANIMATION_SCALE, 0, originalSize.Y.Offset * CONFIG.IDLE_ANIMATION_SCALE)
+		})
+		
+		local scaleDown = TweenService:Create(petImage, scaleUpInfo, {
+			Size = originalSize
+		})
+		
+		scaleUp:Play()
+		scaleUp.Completed:Connect(function()
+			if petImage and petImage.Parent then
+				scaleDown:Play()
+			end
+		end)
+		
+		scaleDown.Completed:Connect(function()
+			if petImage and petImage.Parent then
+				delay(0.1, animateIdle) -- Small pause between cycles
+			end
+		end)
+		
+		idleTween = scaleUp
+	end
+	
+	animateIdle()
+end
+
+local function stopIdleAnimation()
+	if idleTween then
+		idleTween:Cancel()
+		idleTween = nil
+	end
+	if petDisplay and petDisplay.PetImage then
+		petDisplay.PetImage.Size = UDim2.new(0, 50, 0, 50) -- Reset to original
+	end
+end
+
+-- Update coins per second display
+local function updateCoinsPerSecondDisplay()
+	if not petDisplay or not petDisplay.CoinsPerSecondLabel then return end
+	
+	if currentCoinsPerSecond > 0 then
+		petDisplay.CoinsPerSecondLabel.Text = "+" .. currentCoinsPerSecond .. "/sec"
+		petDisplay.CoinsPerSecondLabel.Visible = true
+	else
+		petDisplay.CoinsPerSecondLabel.Visible = false
+	end
 end
 
 -- Screen Shake Effect
@@ -307,6 +416,9 @@ function onCoinsEarned(amount, clickPosition)
 	-- Play coin sound
 	playSound("Coin")
 	
+	-- Show click feedback popup
+	createClickFeedback(amount, clickPosition)
+	
 	-- Animate coin counter
 	animateNumberChange(currentCoins)
 	
@@ -334,6 +446,9 @@ function updateEquippedPet(petData)
 		petDisplay.PetImage.Image = ""
 		petDisplay.MultiplierLabel.Text = "No Pet Equipped"
 		petDisplay.NameLabel.Text = ""
+		stopIdleAnimation()
+		currentCoinsPerSecond = 0
+		updateCoinsPerSecondDisplay()
 		return
 	end
 	
@@ -351,6 +466,22 @@ function updateEquippedPet(petData)
 	}
 	
 	petDisplay.NameLabel.TextColor3 = rarityColors[petData.rarity] or Color3.fromRGB(255, 255, 255)
+	
+	-- Start idle animation
+	startIdleAnimation()
+	
+	-- Fetch and display coins per second
+	local GetCoinsPerSecond = Remotes:WaitForChild("GetCoinsPerSecond", 5)
+	if GetCoinsPerSecond then
+		local success, cps = pcall(function()
+			return GetCoinsPerSecond:InvokeServer()
+		end)
+		if success and cps then
+			currentCoinsPerSecond = cps
+			updateCoinsPerSecondDisplay()
+		end
+	end
+	
 	playSound("Equip")
 end
 
@@ -449,6 +580,20 @@ local function createMainUI()
 	petMultiplier.Font = Enum.Font.Gotham
 	petMultiplier.TextXAlignment = Enum.TextXAlignment.Left
 	petMultiplier.Parent = petDisplay
+	
+	-- Coins per second label (below pet image)
+	local coinsPerSecondLabel = Instance.new("TextLabel")
+	coinsPerSecondLabel.Name = "CoinsPerSecondLabel"
+	coinsPerSecondLabel.Size = UDim2.new(1, -20, 0, 18)
+	coinsPerSecondLabel.Position = UDim2.new(0, 10, 1, -25)
+	coinsPerSecondLabel.BackgroundTransparency = 1
+	coinsPerSecondLabel.Text = "+0/sec"
+	coinsPerSecondLabel.TextColor3 = Color3.fromRGB(85, 255, 85)
+	coinsPerSecondLabel.TextScaled = true
+	coinsPerSecondLabel.Font = Enum.Font.GothamBold
+	coinsPerSecondLabel.TextXAlignment = Enum.TextXAlignment.Center
+	coinsPerSecondLabel.Visible = false
+	coinsPerSecondLabel.Parent = petDisplay
 	
 	-- Click Button (Center)
 	clickButton = Instance.new("ImageButton")
@@ -750,9 +895,27 @@ end
 -- Start
 init()
 
+-- Refresh pet data (called after hatch)
+local function refreshPetData()
+	local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 5)
+	if GetPlayerData then
+		local success, data = pcall(function()
+			return GetPlayerData:InvokeServer()
+		end)
+		if success and data then
+			currentCoins = data.coins or currentCoins
+			animateNumberChange(currentCoins)
+			if data.equipped then
+				updateEquippedPet(data.equipped)
+			end
+		end
+	end
+end
+
 -- Expose functions for other scripts
 _G.ClickerUI = {
 	onCoinsEarned = onCoinsEarned,
 	updateEquippedPet = updateEquippedPet,
-	getSettings = function() return settings end
+	getSettings = function() return settings end,
+	refreshPetData = refreshPetData
 }

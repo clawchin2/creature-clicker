@@ -12,7 +12,7 @@ local ClickHandler = {}
 -- Configuration
 local MAX_CLICKS_PER_SECOND = 10
 local CLICK_WINDOW = 1 -- second
-local BASE_COINS_PER_CLICK = 1
+local BASE_COINS_PER_CLICK = 5
 
 -- Rate limiting tracking
 local clickHistory = {} -- {userId = {timestamps}}

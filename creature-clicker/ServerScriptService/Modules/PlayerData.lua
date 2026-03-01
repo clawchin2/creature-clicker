@@ -23,10 +23,11 @@ local BASE_COINS_PER_CLICK = 1
 
 -- Default data template
 local DEFAULT_DATA = {
-    coins = 0,
+    coins = 5,
     pets = {}, -- {creatureId = count}
     rebirths = 0,
     equipped = nil, -- equipped pet ID
+    isFirstEgg = true, -- Tracks if player has hatched their first egg
     stats = {
         totalClicks = 0,
         totalCoinsEarned = 0,
@@ -267,6 +268,24 @@ function PlayerData:GetPassiveIncome(creatureConfig)
     end
     
     return math.floor(total * 10) / 10 -- Round to 1 decimal
+end
+
+-- Get coins per second from all pets (includes rebirth multiplier)
+function PlayerData:GetCoinsPerSecond(creatureConfig)
+    local baseIncome = self:GetPassiveIncome(creatureConfig)
+    local rebirthMultiplier = 1 + (self:GetRebirths() * 0.1) -- 10% per rebirth
+    return math.floor(baseIncome * rebirthMultiplier * 10) / 10
+end
+
+-- Mark first egg as hatched
+function PlayerData:MarkFirstEggHatched()
+    if not self.data then return end
+    self.data.isFirstEgg = false
+end
+
+-- Check if this is the player's first egg
+function PlayerData:IsFirstEgg()
+    return self.data and self.data.isFirstEgg or false
 end
 
 -- Increment click stat

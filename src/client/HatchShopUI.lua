@@ -158,7 +158,7 @@ function createShopUI()
 	closeCorner.Parent = closeBtn
 	
 	closeBtn.MouseButton1Click:Connect(function()
-		Sounds.Open:Play()
+		if Sounds.Open then Sounds.Open:Play() end
 		createShopUI() -- Toggle off
 	end)
 	
@@ -296,6 +296,9 @@ function buyEgg(eggData)
 	if isHatching then return end
 	isHatching = true
 	
+	-- Play click sound
+	if Sounds.Open then Sounds.Open:Play() end
+	
 	-- Close shop
 	if shopUI then
 		shopUI:Destroy()
@@ -376,7 +379,8 @@ function buyEgg(eggData)
 		shakeReset:Play()
 	end)
 	
-	Sounds.Hatch:Play()
+	-- Play hatch sound
+	if Sounds.Hatch then Sounds.Hatch:Play() end
 	
 	-- Server call for actual hatch
 	local success, result = pcall(function()
@@ -477,7 +481,8 @@ function showHatchResult(petData, hatchUI)
 			Rotation = 360
 		}):Play()
 		
-		Sounds.Rare:Play()
+		-- Play rare sound for Epic/Legendary pets
+		if Sounds.Rare then Sounds.Rare:Play() end
 	end
 	
 	-- Pet name
@@ -533,6 +538,9 @@ function showHatchResult(petData, hatchUI)
 	closeCorner.Parent = closeBtn
 	
 	closeBtn.MouseButton1Click:Connect(function()
+		-- Play sound
+		if Sounds.Open then Sounds.Open:Play() end
+		
 		TweenService:Create(resultContainer, TweenInfo.new(0.2), {
 			Size = UDim2.new(0, 0, 0, 0)
 		}):Play()
@@ -540,6 +548,11 @@ function showHatchResult(petData, hatchUI)
 		delay(0.2, function()
 			hatchUI:Destroy()
 			isHatching = false
+			
+			-- Trigger main UI update via global if available
+			if _G.ClickerUI and _G.ClickerUI.refreshPetData then
+				_G.ClickerUI.refreshPetData()
+			end
 		end)
 	end)
 	
@@ -551,7 +564,14 @@ function showHatchResult(petData, hatchUI)
 end
 
 -- Initialize
-initSounds()
+local function safeInit()
+	local success, err = pcall(initSounds)
+	if not success then
+		warn("[HatchShopUI] Sound init failed:", err)
+	end
+end
+
+safeInit()
 
 -- Expose
 _G.HatchShopUI = {
