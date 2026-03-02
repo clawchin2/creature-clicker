@@ -87,15 +87,27 @@ end)
 buyEggRemote.OnServerInvoke = function(player)
 	print("[Main] BuyEgg requested by " .. player.Name)
 	
+	-- DEBUG: Check what PlayerData.GetSession returns
 	local session = PlayerData:GetSession(player)
+	print("[DEBUG] PlayerData:GetSession returned: " .. tostring(session))
+	
 	if not session then
-		return { success = false, remainingCoins = 0, creatureName = nil }
+		print("[DEBUG] Session is nil! Checking sessions table...")
+		return { success = false, message = "Need 10 coins" }
 	end
+	
+	-- DEBUG: Check session methods
+	print("[DEBUG] session type: " .. type(session))
+	print("[DEBUG] session.GetCoins exists: " .. tostring(session.GetCoins ~= nil))
 	
 	-- Check if player has 10+ coins
 	local EGG_PRICE = 10
-	if session:GetCoins() < EGG_PRICE then
-		return { success = false, remainingCoins = session:GetCoins(), creatureName = nil }
+	local currentCoins = session:GetCoins()
+	print("[DEBUG] currentCoins: " .. tostring(currentCoins) .. " (need " .. EGG_PRICE .. ")")
+	
+	if currentCoins < EGG_PRICE then
+		print("[DEBUG] Not enough coins! Returning failure.")
+		return { success = false, message = "Need 10 coins" }
 	end
 	
 	-- Deduct coins

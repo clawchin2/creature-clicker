@@ -100,6 +100,30 @@ GetPassiveIncomePreview.OnServerInvoke = function(player)
     return PassiveIncome.GetIncomePreview(player)
 end
 
+-- Click remote (earn coins)
+local Click = remotesFolder:FindFirstChild("Click")
+if not Click then
+    Click = Instance.new("RemoteFunction")
+    Click.Name = "Click"
+    Click.Parent = remotesFolder
+end
+
+Click.OnServerInvoke = function(player)
+    local session = PlayerData.GetSession(player.UserId)
+    if not session then
+        return {success = false}
+    end
+    
+    local earned = 1 -- Base click reward
+    session:AddCoins(earned)
+    
+    return {
+        success = true,
+        earned = earned,
+        totalCoins = session:GetCoins()
+    }
+end
+
 -- BuyEgg remote (simplified direct creature purchase)
 local BuyEgg = remotesFolder:FindFirstChild("BuyEgg")
 if not BuyEgg then
@@ -109,13 +133,19 @@ if not BuyEgg then
 end
 
 BuyEgg.OnServerInvoke = function(player)
+    print("[BuyEgg] Player " .. player.Name .. " trying to buy egg")
     local session = PlayerData.GetSession(player.UserId)
     if not session then
+        print("[BuyEgg] ERROR: Session not found for " .. player.UserId)
         return {success = false, message = "Session not found"}
     end
     
     local EGG_PRICE = 10
-    if session:GetCoins() < EGG_PRICE then
+    local currentCoins = session:GetCoins()
+    print("[BuyEgg] Player has " .. currentCoins .. " coins, needs " .. EGG_PRICE)
+    
+    if currentCoins < EGG_PRICE then
+        print("[BuyEgg] FAILED: Not enough coins")
         return {success = false, message = "Need 10 coins"}
     end
     

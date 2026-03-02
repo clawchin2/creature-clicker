@@ -8,6 +8,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 -- Get server remotes
 local remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
+local Click = remotes:WaitForChild("Click")
 local BuyEgg = remotes:WaitForChild("BuyEgg")
 local GetInventory = remotes:WaitForChild("GetInventory")
 
@@ -93,11 +94,19 @@ statusLabel.Parent = screenGui
 local totalCoins = 5
 local creatures = {}
 
--- Click handler
+-- Click handler (server-connected)
 clickButton.MouseButton1Click:Connect(function()
-    totalCoins = totalCoins + 1
-    coinLabel.Text = "Coins: " .. totalCoins
-    print("Clicked! Coins: " .. totalCoins)
+    local success, result = pcall(function()
+        return Click:InvokeServer()
+    end)
+    
+    if success and result and result.success then
+        totalCoins = result.totalCoins
+        coinLabel.Text = "Coins: " .. totalCoins
+        print("Clicked! Earned: " .. result.earned .. ", Total: " .. totalCoins)
+    else
+        print("Click failed")
+    end
 end)
 
 -- Buy Egg handler
