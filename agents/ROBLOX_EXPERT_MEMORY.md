@@ -115,5 +115,49 @@ Recommended approach: Manual Toolbox search using provided keywords.
 4. **Test in Studio first** - Before adding to project
 5. **Keep list organized** - By category, with IDs
 
+## WORLD GEOMETRY CHECKLIST
+
+**CRITICAL LESSON (2026-03-01):** Missing platform = broken game.
+
+### Every Build Must Have:
+- [ ] **Baseplate/Platform** - Player must have ground to stand on
+- [ ] **SpawnLocation** - Positioned ABOVE the platform (not inside or below)
+- [ ] **Lighting** - At least default lighting, not pitch black
+- [ ] **Camera** - Reasonable default camera position
+
+### Common World Setup Mistakes:
+| Mistake | Result | Fix |
+|---------|--------|-----|
+| No platform | Player falls into void | Add Part named "Baseplate", size 100×1×100 |
+| Spawn inside part | Player dies instantly | Move SpawnLocation 5 studs above platform |
+| No lighting | Black screen | Verify Lighting service exists with default settings |
+| Wrong spawn facing | Player looks at wall | Rotate SpawnLocation to face game area |
+
+### Rojo project.json Workspace Check:
+```json
+"Workspace": {
+  "$className": "Workspace",
+  "SpawnLocation": { "$className": "SpawnLocation", "$properties": { "Position": [0, 10, 0] } },
+  "Baseplate": {
+    "$className": "Part",
+    "$properties": {
+      "Size": [100, 1, 100],
+      "Position": [0, 0, 0],
+      "Anchored": true
+    }
+  }
+}
+```
+
+### Verification:
+Before saying "world is ready":
+1. Can a player spawn and stand still without falling?
+2. Can they walk around (WASD)?
+3. Is the camera facing the right direction?
+4. Is anything obviously broken (floating parts, gaps)?
+
+**Never assume world setup is correct. Always check.**
+
 ## DECISION LOG
 - 2026-03-01: Agent created, assigned to find creature models for Creature Clicker
+- 2026-03-01: Added world geometry checklist after platform bug discovered
