@@ -7,47 +7,56 @@
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "Main": { "$path": "creature-clicker/ServerScriptService/Main.server.lua" },
+      "Main": {
+        "$path": "creature-clicker/ServerScriptService/Main.server.lua"
+      },
       "Modules": {
         "$className": "Folder",
-        "CreatureConfig": { "$path": "creature-clicker/ServerScriptService/Modules/CreatureConfig.lua" },
-        "PlayerData": { "$path": "creature-clicker/ServerScriptService/Modules/PlayerData.lua" },
-        "ClickHandler": { "$path": "creature-clicker/ServerScriptService/Modules/ClickHandler.lua" },
-        "HatchSystem": { "$path": "creature-clicker/ServerScriptService/Modules/HatchSystem.lua" },
-        "PassiveIncome": { "$path": "creature-clicker/ServerScriptService/Modules/PassiveIncome.lua" }
+        "CreatureConfig": {
+          "$path": "creature-clicker/ServerScriptService/Modules/CreatureConfig.lua"
+        },
+        "PlayerData": {
+          "$path": "creature-clicker/ServerScriptService/Modules/PlayerData.lua"
+        },
+        "ClickHandler": {
+          "$path": "creature-clicker/ServerScriptService/Modules/ClickHandler.lua"
+        },
+        "HatchSystem": {
+          "$path": "creature-clicker/ServerScriptService/Modules/HatchSystem.lua"
+        },
+        "PassiveIncome": {
+          "$path": "creature-clicker/ServerScriptService/Modules/PassiveIncome.lua"
+        }
       }
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "ClickerUI": { "$path": "src/client/ClickerUI.lua" },
-        "HatchShopUI": { "$path": "src/client/HatchShopUI.lua" }
+        "ClickerUI": {
+          "$path": "src/client/ClickerUI.client.lua"
+        },
+        "HatchShopUI": {
+          "$path": "src/client/HatchShopUI.client.lua"
+        }
       }
     },
     "Workspace": {
       "$className": "Workspace",
-      "SpawnLocation": { "$className": "SpawnLocation", "$properties": { "Position": [0, 10, 0] } },
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Position": [0, 10, 0]
+        }
+      },
       "BasePlatform": {
         "$className": "Part",
         "$properties": {
-          "Name": "BasePlatform",
           "Size": [100, 1, 100],
           "Position": [0, 0, 0],
           "Anchored": true,
           "Color": [0.4, 0.4, 0.4],
           "Material": "Concrete"
-        }
-      },
-      "ClickPlatform": {
-        "$className": "Part",
-        "$properties": {
-          "Name": "ClickPlatform",
-          "Size": [20, 1, 20],
-          "Position": [0, 1, 0],
-          "Anchored": true,
-          "Color": [1, 0.8, 0],
-          "Material": "Neon"
         }
       }
     }
