@@ -20,7 +20,7 @@ function HatchSystem.Init(playerDataModule, creatureConfig)
     HatchSystem.CreatureConfig = creatureConfig
     
     -- Get or create remotes folder
-    local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes")
+    local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
     
     -- Create HatchRequest remote
     Remotes.HatchRequest = remotesFolder:FindFirstChild("HatchRequest")

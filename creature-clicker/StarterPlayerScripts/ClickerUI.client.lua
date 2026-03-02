@@ -105,7 +105,7 @@ local settingsButton = nil
 -- State
 local currentCoins = 0
 local displayedCoins = 0
-equippedPet = nil
+local equippedPet = nil
 local currentCoinsPerSecond = 0
 local idleTween = nil
 local settings = {

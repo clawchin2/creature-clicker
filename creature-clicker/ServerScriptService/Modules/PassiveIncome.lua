@@ -22,7 +22,7 @@ function PassiveIncome.Init(playerDataModule, creatureConfig)
     PassiveIncome.CreatureConfig = creatureConfig
     
     -- Get or create remotes
-    local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes")
+    local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
     
     Remotes.PassiveIncome = remotesFolder:FindFirstChild("PassiveIncome")
     if not Remotes.PassiveIncome then
