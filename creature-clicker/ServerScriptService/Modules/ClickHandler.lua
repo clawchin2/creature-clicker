@@ -61,6 +61,9 @@ function ClickHandler.Init(playerDataModule, creatureConfig)
     Remotes.GetPlayerData.OnServerInvoke = ClickHandler.OnGetPlayerDataRequest
     
     print("[ClickHandler] Module initialized")
+    print(string.format("[ClickHandler] ✓ ClickRequest: %s", Remotes.ClickRequest and "created" or "FAILED"))
+    print(string.format("[ClickHandler] ✓ ClickResponse: %s", Remotes.ClickResponse and "created" or "FAILED"))
+    print(string.format("[ClickHandler] ✓ GetPlayerData: %s", Remotes.GetPlayerData and "created" or "FAILED"))
 end
 
 -- Check rate limit for a player

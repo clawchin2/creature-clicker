@@ -201,11 +201,56 @@ local function onPlayerCommand(player, message)
     end
 end
 
-Players.PlayerChatted:Connect(onPlayerCommand)
+-- Admin commands (only works in live game, not Studio)
+local success, err = pcall(function()
+    Players.PlayerChatted:Connect(onPlayerCommand)
+end)
+if not success then
+    print("[Main] PlayerChatted not available (Studio mode) - admin commands disabled")
+end
 
 -- Handle player leaving cleanup
 Players.PlayerRemoving:Connect(function(player)
     ClickHandler.CleanupPlayer(player.UserId)
+end)
+
+-- Verify RemoteEvents exist and log them
+local function verifyRemotes()
+    local remotesFolder = ReplicatedStorage:FindFirstChild("CreatureClickerRemotes")
+    if remotesFolder then
+        print("[Main] ✓ CreatureClickerRemotes folder exists")
+        local requiredRemotes = {"ClickRequest", "ClickResponse", "HatchRequest", "HatchResult", "GetPlayerData"}
+        for _, remoteName in ipairs(requiredRemotes) do
+            local remote = remotesFolder:FindFirstChild(remoteName)
+            if remote then
+                print(string.format("[Main] ✓ RemoteEvent: %s", remoteName))
+            else
+                print(string.format("[Main] ✗ MISSING RemoteEvent: %s", remoteName))
+            end
+        end
+    else
+        print("[Main] ✗ CreatureClickerRemotes folder NOT FOUND")
+    end
+end
+verifyRemotes()
+
+-- Debug: Monitor player joins and data loading
+Players.PlayerAdded:Connect(function(player)
+    print(string.format("[Main] Player joined: %s (%d)", player.Name, player.UserId))
+    
+    -- Wait a bit and check if data loaded
+    task.delay(3, function()
+        local session = PlayerData.GetSession(player.UserId)
+        if session then
+            if session.loaded then
+                print(string.format("[Main] ✓ Data loaded for %s - Coins: %d", player.Name, session:GetCoins()))
+            else
+                print(string.format("[Main] ✗ Data NOT loaded for %s (still loading?)", player.Name))
+            end
+        else
+            print(string.format("[Main] ✗ NO SESSION for %s", player.Name))
+        end
+    end)
 end)
 
 print("[Main] Server fully operational")

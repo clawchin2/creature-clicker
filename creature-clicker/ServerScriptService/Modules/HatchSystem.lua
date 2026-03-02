@@ -51,6 +51,8 @@ function HatchSystem.Init(playerDataModule, creatureConfig)
     Remotes.GetEggsInfo.OnServerInvoke = HatchSystem.OnGetEggsInfo
     
     print("[HatchSystem] Module initialized")
+    print(string.format("[HatchSystem] ✓ HatchRequest: %s", Remotes.HatchRequest and "created" or "FAILED"))
+    print(string.format("[HatchSystem] ✓ HatchResult: %s", Remotes.HatchResult and "created" or "FAILED"))
 end
 
 -- Get modified rarity weights based on egg type
