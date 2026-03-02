@@ -77,6 +77,7 @@ print("[ClickerUI] CreatureClickerRemotes folder found")
 local ClickRequest = Remotes:WaitForChild("ClickRequest", 30)
 local ClickResponse = Remotes:WaitForChild("ClickResponse", 30)
 local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 30)
+local BuyEgg = Remotes:WaitForChild("BuyEgg", 30)
 
 if not ClickRequest then
 	warn("[ClickerUI] ClickRequest remote not found!")
@@ -86,6 +87,9 @@ if not ClickResponse then
 end
 if not GetPlayerData then
 	warn("[ClickerUI] GetPlayerData remote not found!")
+end
+if not BuyEgg then
+	warn("[ClickerUI] BuyEgg remote not found!")
 end
 
 if not (ClickRequest and ClickResponse and GetPlayerData) then
@@ -287,6 +291,27 @@ local function createMainUI()
 	hatchStroke.Thickness = 2
 	hatchStroke.Parent = hatchButton
 	
+	-- Buy Egg Button (Bottom Right, above click button)
+	local buyEggButton = Instance.new("TextButton")
+	buyEggButton.Name = "BuyEggButton"
+	buyEggButton.Size = UDim2.new(0, 150, 0, 50)
+	buyEggButton.Position = UDim2.new(1, -170, 1, -240)
+	buyEggButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+	buyEggButton.Text = "Buy Egg (10)"
+	buyEggButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	buyEggButton.TextSize = 18
+	buyEggButton.Font = Enum.Font.GothamBold
+	buyEggButton.Parent = mainUI
+	
+	local buyEggCorner = Instance.new("UICorner")
+	buyEggCorner.CornerRadius = UDim.new(0, 10)
+	buyEggCorner.Parent = buyEggButton
+	
+	local buyEggStroke = Instance.new("UIStroke")
+	buyEggStroke.Color = Color3.fromRGB(80, 220, 80)
+	buyEggStroke.Thickness = 2
+	buyEggStroke.Parent = buyEggButton
+	
 	-- Settings Button (Bottom Right)
 	settingsButton = Instance.new("TextButton")
 	settingsButton.Name = "SettingsButton"
@@ -405,6 +430,21 @@ local uiElements = createMainUI()
 
 -- Connect click handler
 clickButton.MouseButton1Click:Connect(onClick)
+
+-- Buy Egg button click handler
+if BuyEgg then
+	local buyEggButton = mainUI:WaitForChild("BuyEggButton")
+	buyEggButton.MouseButton1Click:Connect(function()
+		local result = BuyEgg:InvokeServer()
+		if result.success then
+			currentCoins = result.remainingCoins
+			coinCounter.Text = tostring(currentCoins)
+			print("[ClickerUI] Got: " .. result.creatureName)
+		else
+			print("[ClickerUI] Need 10 coins")
+		end
+	end)
+end
 
 -- Keyboard shortcut (spacebar)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)

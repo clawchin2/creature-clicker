@@ -82,37 +82,77 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 end)
 
--- BuyEgg RemoteFunction
--- Client calls: BuyEgg:InvokeServer(eggType) → returns {success, data/error}
-buyEggRemote.OnServerInvoke = function(player, eggType)
-	print("[Main] BuyEgg requested by " .. player.Name .. " for " .. tostring(eggType))
+-- BuyEgg RemoteFunction (Simplified)
+-- Client calls: BuyEgg:InvokeServer() → returns {success, remainingCoins, creatureName}
+buyEggRemote.OnServerInvoke = function(player)
+	print("[Main] BuyEgg requested by " .. player.Name)
 	
-	-- Validate input
-	if type(eggType) ~= "string" then
-		return { success = false, error = "Invalid egg type format" }
+	local session = PlayerData:GetSession(player)
+	if not session then
+		return { success = false, remainingCoins = 0, creatureName = nil }
 	end
 	
-	-- Attempt purchase
-	local success, result = HatchSystem:BuyEgg(player, eggType)
+	-- Check if player has 10+ coins
+	local EGG_PRICE = 10
+	if session:GetCoins() < EGG_PRICE then
+		return { success = false, remainingCoins = session:GetCoins(), creatureName = nil }
+	end
 	
-	if success then
-		-- Get updated session data
-		local session = PlayerData:GetSession(player)
-		
-		-- Notify client of coin update
-		notifyClient(player, coinsUpdated, session:GetCoins())
-		
-		print("[Main] " .. player.Name .. " bought " .. result.name .. " for " .. result.price .. " coins")
-		
-		return {
-			success = true,
-			egg = result,
-			coinsRemaining = session:GetCoins(),
-		}
+	-- Deduct coins
+	session:RemoveCoins(EGG_PRICE)
+	
+	-- Simple Creature Generation: 70% Common, 25% Uncommon, 5% Rare
+	local roll = math.random(1, 100)
+	local rarity, multiplier
+	local creatureNames = {
+		Common = {"Froggle", "Bunnip", "Sneetle"},
+		Uncommon = {"Glowbug", "Chirpet"},
+		Rare = {"Drakeling"},
+	}
+	
+	if roll <= 70 then
+		rarity = "Common"
+		multiplier = 1.0 + (math.random() * 0.5) -- 1.0 - 1.5x
+	elseif roll <= 95 then
+		rarity = "Uncommon"
+		multiplier = 1.5 + (math.random() * 0.5) -- 1.5 - 2.0x
 	else
-		print("[Main] BuyEgg failed for " .. player.Name .. ": " .. tostring(result))
-		return { success = false, error = result }
+		rarity = "Rare"
+		multiplier = 2.0 + (math.random() * 1.0) -- 2.0 - 3.0x
 	end
+	
+	-- Round multiplier to 1 decimal
+	multiplier = math.floor(multiplier * 10) / 10
+	
+	-- Pick random creature name for rarity
+	local names = creatureNames[rarity]
+	local creatureName = names[math.random(1, #names)]
+	
+	-- Add creature to player's inventory
+	local creatureId = session:AddCreature(creatureName, rarity, multiplier, "Basic")
+	
+	-- Auto-equip if this is their first/best creature
+	local equippedId = session:GetEquippedCreature()
+	if not equippedId then
+		session:EquipCreature(creatureId)
+	else
+		local equipped = session:GetCreature(equippedId)
+		if equipped and multiplier > equipped.multiplier then
+			session:EquipCreature(creatureId)
+		end
+	end
+	
+	-- Notify client of coin update
+	notifyClient(player, coinsUpdated, session:GetCoins())
+	
+	print("[Main] " .. player.Name .. " bought egg, got " .. rarity .. " " .. creatureName .. " (x" .. multiplier .. ")")
+	
+	-- Return data format as requested
+	return {
+		success = true,
+		remainingCoins = session:GetCoins(),
+		creatureName = creatureName
+	}
 end
 
 -- HatchEgg RemoteFunction
