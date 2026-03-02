@@ -78,6 +78,7 @@ local ClickRequest = Remotes:WaitForChild("ClickRequest", 30)
 local ClickResponse = Remotes:WaitForChild("ClickResponse", 30)
 local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 30)
 local BuyEgg = Remotes:WaitForChild("BuyEgg", 30)
+local GetInventory = Remotes:WaitForChild("GetInventory", 30)
 
 if not ClickRequest then
 	warn("[ClickerUI] ClickRequest remote not found!")
@@ -90,6 +91,9 @@ if not GetPlayerData then
 end
 if not BuyEgg then
 	warn("[ClickerUI] BuyEgg remote not found!")
+end
+if not GetInventory then
+	warn("[ClickerUI] GetInventory remote not found!")
 end
 
 if not (ClickRequest and ClickResponse and GetPlayerData) then
@@ -239,6 +243,27 @@ local function createMainUI()
 	cpsLabel.Font = Enum.Font.Gotham
 	cpsLabel.TextXAlignment = Enum.TextXAlignment.Left
 	cpsLabel.Parent = coinFrame
+	
+	-- Inventory Button (Below coin display)
+	local invButton = Instance.new("TextButton")
+	invButton.Name = "InventoryButton"
+	invButton.Size = UDim2.new(0, 100, 0, 40)
+	invButton.Position = UDim2.new(0, 20, 0, 100) -- Below coin display
+	invButton.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+	invButton.Text = "Inventory"
+	invButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	invButton.TextSize = 16
+	invButton.Font = Enum.Font.GothamBold
+	invButton.Parent = mainUI
+	
+	local invCorner = Instance.new("UICorner")
+	invCorner.CornerRadius = UDim.new(0, 8)
+	invCorner.Parent = invButton
+	
+	local invStroke = Instance.new("UIStroke")
+	invStroke.Color = Color3.fromRGB(130, 130, 230)
+	invStroke.Thickness = 2
+	invStroke.Parent = invButton
 	
 	-- Main Click Button (Center)
 	clickButton = Instance.new("TextButton")
@@ -435,13 +460,44 @@ clickButton.MouseButton1Click:Connect(onClick)
 if BuyEgg then
 	local buyEggButton = mainUI:WaitForChild("BuyEggButton")
 	buyEggButton.MouseButton1Click:Connect(function()
-		local result = BuyEgg:InvokeServer()
-		if result.success then
-			currentCoins = result.remainingCoins
-			coinCounter.Text = tostring(currentCoins)
-			print("[ClickerUI] Got: " .. result.creatureName)
+		local success, result = pcall(function()
+			return BuyEgg:InvokeServer()
+		end)
+		
+		if success and result then
+			if result.success then
+				currentCoins = result.remainingCoins
+				coinCounter.Text = tostring(currentCoins)
+				print("[ClickerUI] Got: " .. result.creatureName)
+			else
+				print("[ClickerUI] " .. (result.message or "Need 10 coins"))
+			end
 		else
-			print("[ClickerUI] Need 10 coins")
+			warn("[ClickerUI] BuyEgg failed:", tostring(result))
+		end
+	end)
+end
+
+-- Inventory button click handler
+if GetInventory then
+	local invButton = mainUI:WaitForChild("InventoryButton")
+	invButton.MouseButton1Click:Connect(function()
+		local success, inventory = pcall(function()
+			return GetInventory:InvokeServer()
+		end)
+		
+		if success and inventory then
+			print("[ClickerUI] === INVENTORY ===")
+			if #inventory == 0 then
+				print("[ClickerUI] No creatures yet!")
+			else
+				for i, creature in ipairs(inventory) do
+					print("[ClickerUI] " .. i .. ". " .. creature)
+				end
+			end
+			print("[ClickerUI] ================")
+		else
+			warn("[ClickerUI] GetInventory failed:", tostring(inventory))
 		end
 	end)
 end

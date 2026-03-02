@@ -34,10 +34,7 @@
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
         "ClickerUI": {
-          "$path": "src/client/ClickerUI.client.lua"
-        },
-        "HatchShopUI": {
-          "$path": "src/client/HatchShopUI.client.lua"
+          "$path": "creature-clicker/StarterPlayerScripts/ClickerUI.client.lua"
         }
       }
     },

@@ -2,8 +2,14 @@
 print("[ClickerUI] Loading...")
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- Get server remotes
+local remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
+local BuyEgg = remotes:WaitForChild("BuyEgg")
+local GetInventory = remotes:WaitForChild("GetInventory")
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -23,6 +29,22 @@ coinLabel.TextSize = 32
 coinLabel.Font = Enum.Font.GothamBold
 coinLabel.Parent = screenGui
 
+-- Inventory button
+local invButton = Instance.new("TextButton")
+invButton.Name = "InventoryButton"
+invButton.Size = UDim2.new(0, 100, 0, 40)
+invButton.Position = UDim2.new(0, 20, 0, 120)
+invButton.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+invButton.Text = "Inventory"
+invButton.TextColor3 = Color3.new(1, 1, 1)
+invButton.TextSize = 18
+invButton.Font = Enum.Font.GothamBold
+invButton.Parent = screenGui
+
+local invCorner = Instance.new("UICorner")
+invCorner.CornerRadius = UDim.new(0, 8)
+invCorner.Parent = invButton
+
 -- Click button (bottom right)
 local clickButton = Instance.new("TextButton")
 clickButton.Name = "ClickButton"
@@ -35,7 +57,6 @@ clickButton.TextSize = 40
 clickButton.Font = Enum.Font.GothamBlack
 clickButton.Parent = screenGui
 
--- Make button round
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1, 0)
 corner.Parent = clickButton
@@ -58,23 +79,42 @@ buyCorner.Parent = buyButton
 
 -- Track coins
 local totalCoins = 5
+local creatures = {}
 
--- Click handler
+-- Click handler (local for now)
 clickButton.MouseButton1Click:Connect(function()
     totalCoins = totalCoins + 1
     coinLabel.Text = "Coins: " .. totalCoins
     print("Clicked! Coins: " .. totalCoins)
 end)
 
--- Buy Egg handler (local only for now)
+-- Buy Egg handler (server connected)
 buyButton.MouseButton1Click:Connect(function()
-    if totalCoins >= 10 then
-        totalCoins = totalCoins - 10
+    local success, result = pcall(function()
+        return BuyEgg:InvokeServer()
+    end)
+    
+    if success and result and result.success then
+        totalCoins = result.remainingCoins
         coinLabel.Text = "Coins: " .. totalCoins
-        print("Bought egg! Got: Froggle")
+        table.insert(creatures, result.creatureName)
+        print("Got: " .. result.creatureName)
     else
         print("Need 10 coins")
     end
+end)
+
+-- Inventory handler
+invButton.MouseButton1Click:Connect(function()
+    print("=== INVENTORY ===")
+    if #creatures == 0 then
+        print("No creatures yet!")
+    else
+        for i, creature in ipairs(creatures) do
+            print(i .. ". " .. creature)
+        end
+    end
+    print("=================")
 end)
 
 print("[ClickerUI] Loaded successfully!")

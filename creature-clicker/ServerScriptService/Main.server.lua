@@ -100,6 +100,87 @@ GetPassiveIncomePreview.OnServerInvoke = function(player)
     return PassiveIncome.GetIncomePreview(player)
 end
 
+-- BuyEgg remote (simplified direct creature purchase)
+local BuyEgg = remotesFolder:FindFirstChild("BuyEgg")
+if not BuyEgg then
+    BuyEgg = Instance.new("RemoteFunction")
+    BuyEgg.Name = "BuyEgg"
+    BuyEgg.Parent = remotesFolder
+end
+
+BuyEgg.OnServerInvoke = function(player)
+    local session = PlayerData.GetSession(player.UserId)
+    if not session then
+        return {success = false, message = "Session not found"}
+    end
+    
+    local EGG_PRICE = 10
+    if session:GetCoins() < EGG_PRICE then
+        return {success = false, message = "Need 10 coins"}
+    end
+    
+    -- Deduct coins
+    session:RemoveCoins(EGG_PRICE)
+    
+    -- Generate random creature
+    local creatures = {"Froggle", "Bunnip", "Sneetle", "Glowbug"}
+    local creatureName = creatures[math.random(1, #creatures)]
+    
+    -- Map creature name to creature ID for inventory (using existing config IDs)
+    local creatureIdMap = {
+        Froggle = "fire_common_ember_pup",
+        Bunnip = "earth_uncommon_moss_boar", 
+        Sneetle = "air_common_gust_sprite",
+        Glowbug = "void_uncommon_dark_wolf"
+    }
+    local creatureId = creatureIdMap[creatureName] or "fire_common_ember_pup"
+    
+    -- Add to inventory (pets table)
+    session:AddPet(creatureId)
+    
+    return {
+        success = true,
+        remainingCoins = session:GetCoins(),
+        creatureName = creatureName
+    }
+end
+
+-- GetInventory remote (returns player's creatures as simple list)
+local GetInventory = remotesFolder:FindFirstChild("GetInventory")
+if not GetInventory then
+    GetInventory = Instance.new("RemoteFunction")
+    GetInventory.Name = "GetInventory"
+    GetInventory.Parent = remotesFolder
+end
+
+GetInventory.OnServerInvoke = function(player)
+    local session = PlayerData.GetSession(player.UserId)
+    if not session then
+        return {}
+    end
+    
+    -- Return creatures as simple list of names
+    local inventory = {}
+    local pets = session:GetPets()
+    
+    -- Map creature IDs back to simple names
+    local idToName = {
+        fire_common_ember_pup = "Froggle",
+        earth_uncommon_moss_boar = "Bunnip",
+        air_common_gust_sprite = "Sneetle", 
+        void_uncommon_dark_wolf = "Glowbug"
+    }
+    
+    for creatureId, count in pairs(pets) do
+        local name = idToName[creatureId] or "Unknown"
+        for i = 1, count do
+            table.insert(inventory, name)
+        end
+    end
+    
+    return inventory
+end
+
 -- GetCreatureConfig remote (for UI reference)
 local GetCreatureConfig = remotesFolder:FindFirstChild("GetCreatureConfig")
 if not GetCreatureConfig then
