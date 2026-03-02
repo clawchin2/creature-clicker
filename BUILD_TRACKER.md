@@ -69,18 +69,19 @@
   - First 60s: 8/10 - Guaranteed Rare is genius
   - Economy: 8/10 - Fast, fair progression
   - Verdict: Week 1 SUCCESS
-**Build:** CreatureClicker-WEEK1-FIXED-v5.rbxl (READY)
+**Build:** CreatureClicker-WEEK1-FIXED-v6.rbxl (READY)
 **Checklist:** MANUAL_TEST_CHECKLIST.md (needs update)
 **Status:** ✅ Agents complete, build ready
-**Root Cause Found:** ClickerUI.lua exists but no debug output at file start
+**Root Cause Found:** Duplicate UI files + PlayerGui wait had NO timeout (hung forever)
 **Fixes Applied:**
-- ✅ Added aggressive debug output at TOP of ClickerUI.lua
-- ✅ Added "FILE LOADED" print to confirm execution
-- ✅ Added error UI if remotes not found
-- ✅ Simplified UI to core elements
-- ✅ PlayerChatted error fixed (pcall wrapper)
+- ✅ Deleted duplicate creature-clicker/StarterPlayerScripts/ClickerUI.lua
+- ✅ Fixed PlayerGui WaitForChild timeout: none → 30s
+- ✅ Fixed all RemoteEvent timeouts: 5-10s → 30s
+- ✅ Added nil checks after all waits
+- ✅ Added aggressive debug output
+- ✅ PlayerChatted error fixed
 **GitHub:** https://github.com/clawchin2/creature-clicker
-**Commit:** fe84205
+**Commit:** cc8a3c5
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
