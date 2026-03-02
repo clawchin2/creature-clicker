@@ -22,18 +22,18 @@ if not player then
 end
 print("[ClickerUI] LocalPlayer:", player.Name)
 
-local playerGui = player:WaitForChild("PlayerGui", 10)
+local playerGui = player:WaitForChild("PlayerGui", 30)
 if not playerGui then
-	warn("[ClickerUI] CRITICAL: PlayerGui not found after 10s!")
+	warn("[ClickerUI] CRITICAL: PlayerGui not found after 30s!")
 	return
 end
 print("[ClickerUI] PlayerGui acquired")
 
 -- RemoteEvents (match server naming)
 print("[ClickerUI] Looking for CreatureClickerRemotes...")
-local Remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 10)
+local Remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes", 30)
 if not Remotes then
-	warn("[ClickerUI] CreatureClickerRemotes not found after 10s!")
+	warn("[ClickerUI] CreatureClickerRemotes not found after 30s!")
 	-- Create a visible error UI
 	local errorUI = Instance.new("ScreenGui")
 	errorUI.Name = "ClickerUI_Error"
@@ -74,9 +74,9 @@ end
 print("[ClickerUI] CreatureClickerRemotes folder found")
 
 -- Get remote events with error handling
-local ClickRequest = Remotes:WaitForChild("ClickRequest", 5)
-local ClickResponse = Remotes:WaitForChild("ClickResponse", 5)
-local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 5)
+local ClickRequest = Remotes:WaitForChild("ClickRequest", 30)
+local ClickResponse = Remotes:WaitForChild("ClickResponse", 30)
+local GetPlayerData = Remotes:WaitForChild("GetPlayerData", 30)
 
 if not ClickRequest then
 	warn("[ClickerUI] ClickRequest remote not found!")
