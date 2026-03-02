@@ -69,9 +69,10 @@
   - First 60s: 8/10 - Guaranteed Rare is genius
   - Economy: 8/10 - Fast, fair progression
   - Verdict: Week 1 SUCCESS
-**Build:** CreatureClicker-Week1.rbxl (14 KB)
+**Build:** CreatureClicker-Week1-FIXED.rbxl (14 KB)
 **Checklist:** MANUAL_TEST_CHECKLIST.md
 **Status:** Ready for manual testing
+**Fix:** Added platform/baseplate (player was falling into void)
 **ETA:** Mar 7, 2026
 
 **MILESTONE 1:** Can click, earn, hatch, earn passively ✅
