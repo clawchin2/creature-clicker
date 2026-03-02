@@ -11,8 +11,19 @@ local RunService = game:GetService("RunService")
 local PlayerData = {}
 PlayerData.__index = PlayerData
 
--- DataStore
-local CreatureDataStore = DataStoreService:GetDataStore("CreatureClickerData_v1")
+-- DataStore (with offline fallback)
+local DataStoreEnabled, CreatureDataStore = pcall(function()
+    return DataStoreService:GetDataStore("CreatureClickerData_v1")
+end)
+
+if not DataStoreEnabled then
+    warn("[PlayerData] DataStore not available (Studio offline mode). Using local storage fallback.")
+    -- Mock DataStore for offline testing
+    CreatureDataStore = nil
+end
+
+-- Local storage fallback for offline testing
+local LocalStorage = {}
 
 -- Active player sessions
 PlayerData.Sessions = {}
@@ -63,8 +74,25 @@ function PlayerData.new(player)
     return self
 end
 
--- Load data from DataStore
+-- Load data from DataStore (or local fallback)
 function PlayerData:Load()
+    -- Check if DataStore is available
+    if not DataStoreEnabled or not CreatureDataStore then
+        -- Use local storage fallback
+        if LocalStorage[tostring(self.userId)] then
+            self.data = self:MergeWithDefaults(LocalStorage[tostring(self.userId)])
+            print(string.format("[PlayerData] Loaded LOCAL data for %s (UserId: %d)", self.player.Name, self.userId))
+        else
+            -- New player
+            self.data = deepCopy(DEFAULT_DATA)
+            self.data.stats.joinTime = os.time()
+            print(string.format("[PlayerData] New player %s (LOCAL mode)", self.player.Name))
+        end
+        self.loaded = true
+        return true
+    end
+    
+    -- DataStore available - use it
     local success, result = pcall(function()
         return CreatureDataStore:GetAsync(tostring(self.userId))
     end)
@@ -84,9 +112,10 @@ function PlayerData:Load()
         return true
     else
         warn(string.format("[PlayerData] Failed to load data for %s: %s", self.player.Name, tostring(result)))
+        -- Fallback to local on error
         self.data = deepCopy(DEFAULT_DATA)
-        self.loaded = false
-        return false
+        self.loaded = true
+        return true
     end
 end
 
@@ -108,13 +137,23 @@ function PlayerData:MergeWithDefaults(savedData)
     return merged
 end
 
--- Save data to DataStore
+-- Save data to DataStore (or local fallback)
 function PlayerData:Save()
     if not self.loaded or not self.data then
         warn(string.format("[PlayerData] Cannot save - data not loaded for %s", self.player.Name))
         return false
     end
     
+    -- Check if DataStore is available
+    if not DataStoreEnabled or not CreatureDataStore then
+        -- Use local storage fallback
+        LocalStorage[tostring(self.userId)] = deepCopy(self.data)
+        self.lastSave = tick()
+        print(string.format("[PlayerData] Saved LOCAL data for %s", self.player.Name))
+        return true
+    end
+    
+    -- DataStore available - use it
     local success, result = pcall(function()
         CreatureDataStore:SetAsync(tostring(self.userId), self.data)
     end)

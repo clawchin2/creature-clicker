@@ -35,7 +35,13 @@ PassiveIncome.Init(PlayerData, CreatureConfig)
 print("=== All Systems Initialized ===")
 
 -- Setup additional RemoteEvents/Functions
-local remotesFolder = ReplicatedStorage:WaitForChild("CreatureClickerRemotes")
+local remotesFolder = ReplicatedStorage:FindFirstChild("CreatureClickerRemotes")
+if not remotesFolder then
+    remotesFolder = Instance.new("Folder")
+    remotesFolder.Name = "CreatureClickerRemotes"
+    remotesFolder.Parent = ReplicatedStorage
+    print("[Main] Created CreatureClickerRemotes folder")
+end
 
 -- GetCreatures remote (for inventory display)
 local GetCreatures = remotesFolder:FindFirstChild("GetCreatures")
