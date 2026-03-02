@@ -8,7 +8,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Get server remotes
-local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local remotes = ReplicatedStorage:WaitForChild("CreatureClickerRemotes")
 local buyEggRemote = remotes:WaitForChild("BuyEgg")
 
 -- Create ScreenGui
@@ -77,7 +77,6 @@ clickButton.Text = "CLICK!"
 clickButton.TextColor3 = Color3.new(1, 1, 1)
 clickButton.TextSize = 40
 clickButton.Font = Enum.Font.GothamBlack
-color3 = Color3.fromRGB(0, 120, 200)
 clickButton.Parent = screenGui
 
 -- Make button ROUND
