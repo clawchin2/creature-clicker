@@ -40,6 +40,22 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1, 0)
 corner.Parent = clickButton
 
+-- Buy Egg Button (above click button)
+local buyButton = Instance.new("TextButton")
+buyButton.Name = "BuyEggButton"
+buyButton.Size = UDim2.new(0, 150, 0, 50)
+buyButton.Position = UDim2.new(1, -170, 1, -240)
+buyButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+buyButton.Text = "Buy Egg (10)"
+buyButton.TextColor3 = Color3.new(1, 1, 1)
+buyButton.TextSize = 18
+buyButton.Font = Enum.Font.GothamBold
+buyButton.Parent = screenGui
+
+local buyCorner = Instance.new("UICorner")
+buyCorner.CornerRadius = UDim.new(0, 10)
+buyCorner.Parent = buyButton
+
 -- Track coins
 local totalCoins = 5
 
@@ -48,6 +64,17 @@ clickButton.MouseButton1Click:Connect(function()
     totalCoins = totalCoins + 1
     coinLabel.Text = "Coins: " .. totalCoins
     print("Clicked! Coins: " .. totalCoins)
+end)
+
+-- Buy Egg handler (local only for now)
+buyButton.MouseButton1Click:Connect(function()
+    if totalCoins >= 10 then
+        totalCoins = totalCoins - 10
+        coinLabel.Text = "Coins: " .. totalCoins
+        print("Bought egg! Got: Froggle")
+    else
+        print("Need 10 coins")
+    end
 end)
 
 print("[ClickerUI] Loaded successfully!")
