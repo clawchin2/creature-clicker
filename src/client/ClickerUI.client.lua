@@ -33,11 +33,11 @@ coinIcon.BackgroundTransparency = 1
 coinIcon.Image = "rbxassetid://0" -- Placeholder, can be replaced with actual coin icon
 coinIcon.Parent = coinLabel
 
--- Click button (bottom center, round)
+-- Click button (bottom right corner, round)
 local clickButton = Instance.new("TextButton")
 clickButton.Name = "ClickButton"
-clickButton.Size = UDim2.new(0, 200, 0, 200)
-clickButton.Position = UDim2.new(0.5, -100, 0.8, -100) -- Moved to bottom center (0.8 Y)
+clickButton.Size = UDim2.new(0, 150, 0, 150)
+clickButton.Position = UDim2.new(1, -170, 1, -170) -- Bottom right corner with padding
 clickButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 clickButton.Text = "CLICK!"
 clickButton.TextColor3 = Color3.new(1, 1, 1)
@@ -73,8 +73,8 @@ uiStroke.Transparency = 0.3
 uiStroke.Parent = clickButton
 
 -- Animation configurations
-local normalSize = UDim2.new(0, 200, 0, 200)
-local pressedSize = UDim2.new(0, 180, 0, 180) -- Slightly smaller when clicked
+local normalSize = UDim2.new(0, 150, 0, 150)
+local pressedSize = UDim2.new(0, 130, 0, 130) -- Slightly smaller when clicked
 local normalColor = Color3.fromRGB(0, 150, 255)
 local hoverColor = Color3.fromRGB(50, 180, 255) -- Brighter on hover
 local pressedColor = Color3.fromRGB(0, 120, 200) -- Darker when pressed
@@ -96,6 +96,9 @@ clickButton.MouseLeave:Connect(function()
     TweenService:Create(uiStroke, tweenInfo, {Transparency = 0.3}):Play()
 end)
 
+-- Track total coins locally
+local totalCoins = 5
+
 -- Click handler with scale animation
 clickButton.MouseButton1Down:Connect(function()
     -- Scale down and darken
@@ -114,7 +117,8 @@ clickButton.MouseButton1Up:Connect(function()
 end)
 
 clickButton.MouseButton1Click:Connect(function()
-    coinLabel.Text = "Coins: +1"
+    totalCoins = totalCoins + 1
+    coinLabel.Text = "Coins: " .. totalCoins
     
     -- Flash effect on coin label
     local originalColor = coinLabel.TextColor3
