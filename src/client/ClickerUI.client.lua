@@ -3,8 +3,13 @@ print("[ClickerUI] Loading...")
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- Get server remotes
+local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local buyEggRemote = remotes:WaitForChild("BuyEgg")
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -32,6 +37,35 @@ coinIcon.Position = UDim2.new(0, -45, 0, 5)
 coinIcon.BackgroundTransparency = 1
 coinIcon.Image = "rbxassetid://0" -- Placeholder, can be replaced with actual coin icon
 coinIcon.Parent = coinLabel
+
+-- Buy Egg button (below click button)
+local buyEggButton = Instance.new("TextButton")
+buyEggButton.Name = "BuyEggButton"
+buyEggButton.Size = UDim2.new(0, 150, 0, 60)
+buyEggButton.Position = UDim2.new(1, -170, 1, -90) -- Below click button
+buyEggButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50) -- Green
+buyEggButton.Text = "Buy Egg (10)"
+buyEggButton.TextColor3 = Color3.new(1, 1, 1)
+buyEggButton.TextSize = 20
+buyEggButton.Font = Enum.Font.GothamBold
+buyEggButton.Parent = screenGui
+
+-- Egg button corner radius
+local eggCorner = Instance.new("UICorner")
+eggCorner.CornerRadius = UDim.new(0, 10)
+eggCorner.Parent = buyEggButton
+
+-- Feedback label (above buttons)
+local feedbackLabel = Instance.new("TextLabel")
+feedbackLabel.Name = "FeedbackLabel"
+feedbackLabel.Size = UDim2.new(0, 300, 0, 40)
+feedbackLabel.Position = UDim2.new(1, -245, 1, -135) -- Above buttons
+feedbackLabel.BackgroundTransparency = 1
+feedbackLabel.Text = ""
+feedbackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+feedbackLabel.TextSize = 20
+feedbackLabel.Font = Enum.Font.GothamBold
+feedbackLabel.Parent = screenGui
 
 -- Click button (bottom right corner, round)
 local clickButton = Instance.new("TextButton")
@@ -125,6 +159,43 @@ clickButton.MouseButton1Click:Connect(function()
     coinLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     wait(0.1)
     coinLabel.TextColor3 = originalColor
+end)
+
+-- Buy Egg handler
+buyEggButton.MouseButton1Click:Connect(function()
+    -- Call server to buy egg
+    local success, result = pcall(function()
+        return buyEggRemote:InvokeServer()
+    end)
+
+    if success and result then
+        if result.success then
+            -- Update coin display
+            if result.remainingCoins then
+                totalCoins = result.remainingCoins
+                coinLabel.Text = "Coins: " .. totalCoins
+            end
+
+            -- Show success
+            feedbackLabel.Text = "Got: " .. result.creatureName
+            feedbackLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        else
+            -- Show error
+            feedbackLabel.Text = "Need 10 coins"
+            feedbackLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+
+        -- Clear feedback after 2 seconds
+        delay(2, function()
+            feedbackLabel.Text = ""
+        end)
+    else
+        feedbackLabel.Text = "Error buying egg"
+        feedbackLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        delay(2, function()
+            feedbackLabel.Text = ""
+        end)
+    end
 end)
 
 print("[ClickerUI] Loaded successfully!")

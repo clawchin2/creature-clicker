@@ -2,73 +2,75 @@
 
 ---
 
-## DIRECTOR COMPLIANCE PROTOCOL
+## CORE FIRST, POLISH LATER STANDARD
 
-### Rule: I Must Use Agents, Never Fix Directly
+**Established: 2026-03-02**
 
-**VIOLATION (2026-03-01):** DataStore bug found → I fixed it directly instead of spawning Code Agent.
+**User Directive:** "Build core functionality first, then add everything else"
 
-**Why this is wrong:**
-- Bypasses Validation Agent (bugs can be introduced)
-- No independent verification
-- Sets bad precedent
-- Violates established workflow
-- User explicitly said "Option A always"
+### Implementation Order
 
-### Mandatory Agent Usage
+**1. CORE FUNCTIONALITY**
+Build minimum viable feature that WORKS:
+- Click button → Earn coins ✓
+- Buy egg → Get creature instantly (no animation yet)
+- Basic UI elements (functional, not pretty)
 
-**When bug found:**
-- [ ] STOP
-- [ ] Spawn Code Agent to fix
-- [ ] Spawn Validation Agent to test fix
-- [ ] Loop until Validation approves
-- [ ] Only then deliver to user
+**2. VERIFY CORE**
+- Spawn Validation Agent
+- Confirm functionality works
+- Fix any bugs before adding complexity
 
-**NO EXCEPTIONS for:**
-- "Quick fixes"
-- "Small changes"
-- "Critical bugs"
-- "I know how to fix it"
+**3. ADD POLISH**
+Only after core verified:
+- Animations
+- Sound effects
+- Visual flair
+- Particle effects
+- Complex UI transitions
 
-**The only exception:** User explicitly says "fix it yourself" or "skip agents"
+### Why This Works
 
-### Self-Correction Checklist
+- Faster iterations (less agent timeout)
+- Working game at each milestone
+- Easier debugging (smaller scope)
+- Clear progress visible
+- Less wasted API credits
 
-Before fixing anything directly, ask:
-1. Is this an emergency user can't wait for? (No → Use agents)
-2. Will this take less than 5 minutes? (No → Use agents)
-3. Is the user asking me to do it directly? (No → Use agents)
-4. Would agents catch something I might miss? (Yes → Use agents)
+### Example Sequence
 
-**Default answer: Spawn agents.**
+**Week 1: Clicker Core**
+- Day 1-2: Click → Earn coins (CORE) ✅
+- Day 3-4: Polish (animations, sounds)
 
-### Penalty for Non-Compliance
+**Week 2: Hatching Core**
+- Day 1-2: Buy egg → Get creature (CORE)
+- Day 3-4: Polish (hatch animations)
 
-If I fix directly without user permission:
-- Must acknowledge violation
-- Must still spawn Validation Agent after
-- Must update this log
-- Risk losing user trust
+**Week 3: Monetization Core**
+- Day 1-2: Gamepass works (CORE)
+- Day 3-4: Polish (shop UI, effects)
 
-### Compliance Log
+### Agent Task Guidelines
 
-| Date | Violation | Corrected |
-|------|-----------|-----------|
-| 2026-03-01 | Fixed DataStore bug directly | Yes - Process updated |
+**CORE Task (Good):**
+"Create Buy Egg button. When clicked: deduct coins, give random creature, show in inventory."
+
+**POLISH Task (After Core Works):**
+"Add egg hatching animation: shake 2s, crack effect, creature reveal with rarity glow."
+
+### Never Do
+
+❌ Complex UI with animations before basic button works
+❌ Full feature set in one agent task  
+❌ Polish before core functionality verified
+❌ "Build everything at once"
+
+### Always Do
+
+✅ Smallest working version first
+✅ Validate before adding complexity
+✅ One core feature per agent cycle
+✅ "Make it work, then make it pretty"
 
 ---
-
-## FINAL PROTOCOL SUMMARY
-
-**When user says anything is broken:**
-1. Acknowledge receipt
-2. Spawn Validation Agent to diagnose
-3. Validation reports findings
-4. Spawn Code Agent to fix
-5. Validation re-tests
-6. Loop until clean
-7. Deliver
-
-**Never skip steps. Never fix directly. Never assume.**
-
-**The agents exist for a reason. Use them.**
