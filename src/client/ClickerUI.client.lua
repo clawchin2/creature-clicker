@@ -46,22 +46,6 @@ local invCorner = Instance.new("UICorner")
 invCorner.CornerRadius = UDim.new(0, 8)
 invCorner.Parent = invButton
 
--- Buy Egg Button (bottom right, NOT covering player)
-local buyButton = Instance.new("TextButton")
-buyButton.Name = "BuyEggButton"
-buyButton.Size = UDim2.new(0, 140, 0, 50)
-buyButton.Position = UDim2.new(1, -160, 1, -70) -- Bottom right corner
-buyButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
-buyButton.Text = "Buy Egg (10)"
-buyButton.TextColor3 = Color3.new(1, 1, 1)
-buyButton.TextSize = 16
-buyButton.Font = Enum.Font.GothamBold
-buyButton.Parent = screenGui
-
-local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 10)
-buyCorner.Parent = buyButton
-
 -- Click button (bottom left, NOT covering player)
 local clickButton = Instance.new("TextButton")
 clickButton.Name = "ClickButton"
@@ -77,6 +61,62 @@ clickButton.Parent = screenGui
 local clickCorner = Instance.new("UICorner")
 clickCorner.CornerRadius = UDim.new(0, 10)
 clickCorner.Parent = clickButton
+
+-- Egg Type Buttons Container Frame (right side)
+local eggFrame = Instance.new("Frame")
+eggFrame.Name = "EggFrame"
+eggFrame.Size = UDim2.new(0, 120, 0, 140)
+eggFrame.Position = UDim2.new(1, -140, 0, 100) -- Top right area
+eggFrame.BackgroundTransparency = 1
+eggFrame.Parent = screenGui
+
+-- Basic Egg Button (10 coins) - Green
+local basicButton = Instance.new("TextButton")
+basicButton.Name = "BasicEggButton"
+basicButton.Size = UDim2.new(0, 100, 0, 40)
+basicButton.Position = UDim2.new(0, 10, 0, 0)
+basicButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+basicButton.Text = "Basic (10)"
+basicButton.TextColor3 = Color3.new(1, 1, 1)
+basicButton.TextSize = 14
+basicButton.Font = Enum.Font.GothamBold
+basicButton.Parent = eggFrame
+
+local basicCorner = Instance.new("UICorner")
+basicCorner.CornerRadius = UDim.new(0, 8)
+basicCorner.Parent = basicButton
+
+-- Fire Egg Button (50 coins) - Red/Orange
+local fireButton = Instance.new("TextButton")
+fireButton.Name = "FireEggButton"
+fireButton.Size = UDim2.new(0, 100, 0, 40)
+fireButton.Position = UDim2.new(0, 10, 0, 50)
+fireButton.BackgroundColor3 = Color3.fromRGB(255, 100, 30)
+fireButton.Text = "Fire (50)"
+fireButton.TextColor3 = Color3.new(1, 1, 1)
+fireButton.TextSize = 14
+fireButton.Font = Enum.Font.GothamBold
+fireButton.Parent = eggFrame
+
+local fireCorner = Instance.new("UICorner")
+fireCorner.CornerRadius = UDim.new(0, 8)
+fireCorner.Parent = fireButton
+
+-- Void Egg Button (150 coins) - Purple
+local voidButton = Instance.new("TextButton")
+voidButton.Name = "VoidEggButton"
+voidButton.Size = UDim2.new(0, 100, 0, 40)
+voidButton.Position = UDim2.new(0, 10, 0, 100)
+voidButton.BackgroundColor3 = Color3.fromRGB(150, 50, 200)
+voidButton.Text = "Void (150)"
+voidButton.TextColor3 = Color3.new(1, 1, 1)
+voidButton.TextSize = 14
+voidButton.Font = Enum.Font.GothamBold
+voidButton.Parent = eggFrame
+
+local voidCorner = Instance.new("UICorner")
+voidCorner.CornerRadius = UDim.new(0, 8)
+voidCorner.Parent = voidButton
 
 -- Status label (center top, for feedback)
 local statusLabel = Instance.new("TextLabel")
@@ -109,22 +149,73 @@ clickButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Buy Egg handler
-buyButton.MouseButton1Click:Connect(function()
+-- Helper function to show status with rarity
+local function showHatchResult(creatureName, rarity)
+    local rarityColors = {
+        Common = Color3.fromRGB(200, 200, 200),
+        Uncommon = Color3.fromRGB(100, 255, 100),
+        Rare = Color3.fromRGB(100, 150, 255),
+        Epic = Color3.fromRGB(200, 100, 255),
+        Legendary = Color3.fromRGB(255, 200, 50)
+    }
+    
+    statusLabel.Text = "Got: " .. creatureName .. " (" .. rarity .. ")"
+    statusLabel.TextColor3 = rarityColors[rarity] or Color3.fromRGB(255, 255, 255)
+    wait(2)
+    statusLabel.Text = ""
+end
+
+-- Basic Egg handler
+basicButton.MouseButton1Click:Connect(function()
     local success, result = pcall(function()
-        return BuyEgg:InvokeServer()
+        return BuyEgg:InvokeServer("basic")
     end)
     
     if success and result and result.success then
         totalCoins = result.remainingCoins
         coinLabel.Text = "Coins: " .. totalCoins
         table.insert(creatures, result.creatureName)
-        statusLabel.Text = "Got: " .. result.creatureName
-        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        wait(2)
-        statusLabel.Text = ""
+        showHatchResult(result.creatureName, result.rarity or "Common")
     else
         statusLabel.Text = "Need 10 coins"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        wait(2)
+        statusLabel.Text = ""
+    end
+end)
+
+-- Fire Egg handler
+fireButton.MouseButton1Click:Connect(function()
+    local success, result = pcall(function()
+        return BuyEgg:InvokeServer("fire")
+    end)
+    
+    if success and result and result.success then
+        totalCoins = result.remainingCoins
+        coinLabel.Text = "Coins: " .. totalCoins
+        table.insert(creatures, result.creatureName)
+        showHatchResult(result.creatureName, result.rarity or "Rare")
+    else
+        statusLabel.Text = "Need 50 coins"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        wait(2)
+        statusLabel.Text = ""
+    end
+end)
+
+-- Void Egg handler
+voidButton.MouseButton1Click:Connect(function()
+    local success, result = pcall(function()
+        return BuyEgg:InvokeServer("void")
+    end)
+    
+    if success and result and result.success then
+        totalCoins = result.remainingCoins
+        coinLabel.Text = "Coins: " .. totalCoins
+        table.insert(creatures, result.creatureName)
+        showHatchResult(result.creatureName, result.rarity or "Epic")
+    else
+        statusLabel.Text = "Need 150 coins"
         statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         wait(2)
         statusLabel.Text = ""

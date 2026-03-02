@@ -124,7 +124,7 @@ Click.OnServerInvoke = function(player)
     }
 end
 
--- BuyEgg remote (simplified direct creature purchase)
+-- BuyEgg remote (supports multiple egg types with rarity system)
 local BuyEgg = remotesFolder:FindFirstChild("BuyEgg")
 if not BuyEgg then
     BuyEgg = Instance.new("RemoteFunction")
@@ -132,50 +132,102 @@ if not BuyEgg then
     BuyEgg.Parent = remotesFolder
 end
 
-BuyEgg.OnServerInvoke = function(player)
-    print("[BuyEgg] Player " .. player.Name .. " trying to buy egg")
+BuyEgg.OnServerInvoke = function(player, eggType)
+    -- Default to Basic egg if not specified
+    eggType = eggType or "Basic"
+    
+    print("[BuyEgg] Player " .. player.Name .. " trying to buy " .. tostring(eggType) .. " egg")
+    
     local session = PlayerData.GetSession(player.UserId)
     if not session then
         print("[BuyEgg] ERROR: Session not found for " .. player.UserId)
         return {success = false, message = "Session not found"}
     end
     
-    local EGG_PRICE = 10
-    local currentCoins = session:GetCoins()
-    print("[BuyEgg] Player has " .. currentCoins .. " coins, needs " .. EGG_PRICE)
+    -- Validate egg type and get price
+    local eggConfig = CreatureConfig.Eggs[eggType]
+    if not eggConfig then
+        print("[BuyEgg] ERROR: Invalid egg type " .. tostring(eggType))
+        return {success = false, message = "Invalid egg type: " .. tostring(eggType)}
+    end
     
-    if currentCoins < EGG_PRICE then
-        print("[BuyEgg] FAILED: Not enough coins")
-        return {success = false, message = "Need 10 coins"}
+    local eggPrice = eggConfig.cost
+    local currentCoins = session:GetCoins()
+    print("[BuyEgg] Player has " .. currentCoins .. " coins, needs " .. eggPrice)
+    
+    if currentCoins < eggPrice then
+        print("[BuyEgg] FAILED: Not enough coins for " .. eggType .. " egg")
+        return {success = false, message = "Need " .. eggPrice .. " coins for " .. eggType .. " Egg"}
     end
     
     -- Deduct coins
-    session:RemoveCoins(EGG_PRICE)
+    session:RemoveCoins(eggPrice)
     
-    -- Generate random creature
-    local creatures = {"Froggle", "Bunnip", "Sneetle", "Glowbug"}
-    local creatureName = creatures[math.random(1, #creatures)]
+    -- Generate creature with rarity system
+    local creature = CreatureConfig:GetRandomCreatureFromEgg(eggType)
     
-    -- Map creature name to creature ID for inventory (using existing config IDs)
-    local creatureIdMap = {
-        Froggle = "fire_common_ember_pup",
-        Bunnip = "earth_uncommon_moss_boar", 
-        Sneetle = "air_common_gust_sprite",
-        Glowbug = "void_uncommon_dark_wolf"
-    }
-    local creatureId = creatureIdMap[creatureName] or "fire_common_ember_pup"
+    -- Add to inventory with unique instance ID
+    local instanceId = creature.id .. "_" .. tostring(os.time()) .. "_" .. tostring(math.random(1000, 9999))
+    session:AddPet(creature.id)
     
-    -- Add to inventory (pets table)
-    session:AddPet(creatureId)
+    print("[BuyEgg] SUCCESS: " .. player.Name .. " got " .. creature.name .. " (" .. creature.rarity .. ") with " .. string.format("%.1fx", creature.multiplier) .. " multiplier")
     
     return {
         success = true,
         remainingCoins = session:GetCoins(),
-        creatureName = creatureName
+        creatureName = creature.name,
+        creatureId = creature.id,
+        rarity = creature.rarity,
+        multiplier = creature.multiplier,
+        element = creature.element,
+        description = creature.description
     }
 end
 
--- GetInventory remote (returns player's creatures as simple list)
+-- GetEggTypes remote (for UI to show available eggs)
+local GetEggTypes = remotesFolder:FindFirstChild("GetEggTypes")
+if not GetEggTypes then
+    GetEggTypes = Instance.new("RemoteFunction")
+    GetEggTypes.Name = "GetEggTypes"
+    GetEggTypes.Parent = remotesFolder
+end
+
+GetEggTypes.OnServerInvoke = function(player)
+    local eggList = {}
+    
+    for eggId, eggData in pairs(CreatureConfig.Eggs) do
+        local eggInfo = {
+            id = eggData.id,
+            name = eggData.name,
+            cost = eggData.cost,
+            description = eggData.description,
+            rarityChances = {}
+        }
+        
+        -- Calculate percentage chances
+        local totalWeight = 0
+        for rarity, weight in pairs(eggData.rarityWeights) do
+            totalWeight = totalWeight + weight
+        end
+        
+        for rarity, weight in pairs(eggData.rarityWeights) do
+            if weight > 0 then
+                eggInfo.rarityChances[rarity] = math.floor((weight / totalWeight) * 100)
+            end
+        end
+        
+        table.insert(eggList, eggInfo)
+    end
+    
+    -- Sort by cost
+    table.sort(eggList, function(a, b)
+        return a.cost < b.cost
+    end)
+    
+    return eggList
+end
+
+-- GetInventory remote (returns player's creatures with rarity info)
 local GetInventory = remotesFolder:FindFirstChild("GetInventory")
 if not GetInventory then
     GetInventory = Instance.new("RemoteFunction")
@@ -189,22 +241,22 @@ GetInventory.OnServerInvoke = function(player)
         return {}
     end
     
-    -- Return creatures as simple list of names
+    -- Return creatures with full data including rarity
     local inventory = {}
     local pets = session:GetPets()
     
-    -- Map creature IDs back to simple names
-    local idToName = {
-        fire_common_ember_pup = "Froggle",
-        earth_uncommon_moss_boar = "Bunnip",
-        air_common_gust_sprite = "Sneetle", 
-        void_uncommon_dark_wolf = "Glowbug"
-    }
-    
     for creatureId, count in pairs(pets) do
-        local name = idToName[creatureId] or "Unknown"
-        for i = 1, count do
-            table.insert(inventory, name)
+        local creatureData = CreatureConfig:GetCreatureById(creatureId)
+        if creatureData then
+            for i = 1, count do
+                table.insert(inventory, {
+                    name = creatureData.name,
+                    creatureId = creatureId,
+                    rarity = creatureData.rarity,
+                    element = creatureData.element,
+                    description = creatureData.description
+                })
+            end
         end
     end
     

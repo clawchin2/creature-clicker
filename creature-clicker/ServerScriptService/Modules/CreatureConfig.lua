@@ -1,309 +1,289 @@
 --[[
     CreatureConfig Module
     Stores all creature data, rarity weights, and egg configurations
-    25 Creatures: 5 Elements × 5 Rarities
+    Updated: Multiple egg types and creature rarity system
 ]]
 
 local CreatureConfig = {}
 
--- Rarity definitions
+-- Rarity definitions with multiplier ranges
 CreatureConfig.Rarities = {
     Common = {
-        weight = 50,
-        multiplier = 1,
+        weight = 70,
+        minMultiplier = 1.1,
+        maxMultiplier = 1.5,
         color = Color3.fromRGB(169, 169, 169), -- Gray
-        chancePercent = 50
+        chancePercent = 70
     },
     Uncommon = {
-        weight = 30,
-        multiplier = 2,
+        weight = 25,
+        minMultiplier = 1.6,
+        maxMultiplier = 2.5,
         color = Color3.fromRGB(0, 255, 0), -- Green
-        chancePercent = 30
+        chancePercent = 25
     },
     Rare = {
-        weight = 15,
-        multiplier = 5,
+        weight = 4.5,
+        minMultiplier = 3.0,
+        maxMultiplier = 5.0,
         color = Color3.fromRGB(0, 100, 255), -- Blue
-        chancePercent = 15
+        chancePercent = 4.5
     },
     Epic = {
-        weight = 4,
-        multiplier = 10,
+        weight = 0.4,
+        minMultiplier = 6.0,
+        maxMultiplier = 9.0,
         color = Color3.fromRGB(128, 0, 255), -- Purple
-        chancePercent = 4
+        chancePercent = 0.4
     },
     Legendary = {
-        weight = 1,
-        multiplier = 50,
+        weight = 0.1,
+        minMultiplier = 10.0,
+        maxMultiplier = 15.0,
         color = Color3.fromRGB(255, 215, 0), -- Gold
-        chancePercent = 1
+        chancePercent = 0.1
     }
 }
 
--- Total weight for RNG calculations
-CreatureConfig.TotalWeight = 50 + 30 + 15 + 4 + 1
+-- Helper to get random multiplier for a rarity
+function CreatureConfig:GetRandomMultiplier(rarity)
+    local rarityData = self.Rarities[rarity]
+    if not rarityData then return 1.0 end
+    
+    local rng = Random.new()
+    local range = rarityData.maxMultiplier - rarityData.minMultiplier
+    return rarityData.minMultiplier + (rng:NextNumber() * range)
+end
 
--- Creature data: 5 Elements × 5 Rarities = 25 creatures
+-- Total weight for RNG calculations (used as base)
+CreatureConfig.TotalWeight = 100
+
+-- Creature data by rarity tiers
 CreatureConfig.Creatures = {
-    -- FIRE ELEMENT
-    fire_common_ember_pup = {
-        id = "fire_common_ember_pup",
-        name = "Ember Pup",
-        element = "Fire",
-        rarity = "Common",
-        multiplier = 1,
-        description = "A small pup with embers in its fur."
-    },
-    fire_uncommon_flame_fox = {
-        id = "fire_uncommon_flame_fox",
-        name = "Flame Fox",
-        element = "Fire",
-        rarity = "Uncommon",
-        multiplier = 2,
-        description = "A fox that dances through flames."
-    },
-    fire_rare_pyro_drake = {
-        id = "fire_rare_pyro_drake",
-        name = "Pyro Drake",
-        element = "Fire",
-        rarity = "Rare",
-        multiplier = 5,
-        description = "A young dragon that breathes fire."
-    },
-    fire_epic_inferno_wyrm = {
-        id = "fire_epic_inferno_wyrm",
-        name = "Inferno Wyrm",
-        element = "Fire",
-        rarity = "Epic",
-        multiplier = 10,
-        description = "Ancient wyrm of eternal flame."
-    },
-    fire_legendary_phoenix = {
-        id = "fire_legendary_phoenix",
-        name = "Phoenix",
-        element = "Fire",
-        rarity = "Legendary",
-        multiplier = 50,
-        description = "The immortal bird of rebirth."
-    },
-
-    -- WATER ELEMENT
-    water_common_bubble_slime = {
-        id = "water_common_bubble_slime",
-        name = "Bubble Slime",
+    -- COMMON TIER (Froggle, Sneetle + new common creatures)
+    froggle = {
+        id = "froggle",
+        name = "Froggle",
         element = "Water",
         rarity = "Common",
-        multiplier = 1,
-        description = "A squishy slime full of bubbles."
+        description = "A bouncy little frog creature.",
+        image = "rbxassetid://12345"
     },
-    water_uncommon_tide_turtle = {
-        id = "water_uncommon_tide_turtle",
-        name = "Tide Turtle",
-        element = "Water",
-        rarity = "Uncommon",
-        multiplier = 2,
-        description = "Turtle that rides the ocean tides."
+    sneetle = {
+        id = "sneetle",
+        name = "Sneetle",
+        element = "Earth",
+        rarity = "Common",
+        description = "A sneaky beetle that hides in sand.",
+        image = "rbxassetid://12346"
     },
-    water_rare_aqua_serpent = {
-        id = "water_rare_aqua_serpent",
-        name = "Aqua Serpent",
-        element = "Water",
-        rarity = "Rare",
-        multiplier = 5,
-        description = "Serpent of the deep blue sea."
-    },
-    water_epic_tsunami_leviathan = {
-        id = "water_epic_tsunami_leviathan",
-        name = "Tsunami Leviathan",
-        element = "Water",
-        rarity = "Epic",
-        multiplier = 10,
-        description = "Titan that commands the waves."
-    },
-    water_legendary_kraken = {
-        id = "water_legendary_kraken",
-        name = "Kraken",
-        element = "Water",
-        rarity = "Legendary",
-        multiplier = 50,
-        description = "The legendary sea monster."
-    },
-
-    -- EARTH ELEMENT
-    earth_common_pebble_sprite = {
-        id = "earth_common_pebble_sprite",
+    pebble_sprite = {
+        id = "pebble_sprite",
         name = "Pebble Sprite",
         element = "Earth",
         rarity = "Common",
-        multiplier = 1,
-        description = "A tiny spirit of small stones."
+        description = "A tiny spirit of small stones.",
+        image = "rbxassetid://12347"
     },
-    earth_uncommon_moss_boar = {
-        id = "earth_uncommon_moss_boar",
-        name = "Moss Boar",
+    bubble_slime = {
+        id = "bubble_slime",
+        name = "Bubble Slime",
+        element = "Water",
+        rarity = "Common",
+        description = "A squishy slime full of bubbles.",
+        image = "rbxassetid://12348"
+    },
+
+    -- UNCOMMON TIER (Bunnip, Glowbug)
+    bunnip = {
+        id = "bunnip",
+        name = "Bunnip",
         element = "Earth",
         rarity = "Uncommon",
-        multiplier = 2,
-        description = "Boar covered in ancient moss."
+        description = "A fluffy bunny with leaf ears.",
+        image = "rbxassetid://12349"
     },
-    earth_rare_stone_golem = {
-        id = "earth_rare_stone_golem",
+    glowbug = {
+        id = "glowbug",
+        name = "Glowbug",
+        element = "Void",
+        rarity = "Uncommon",
+        description = "A bug that glows in the dark.",
+        image = "rbxassetid://12350"
+    },
+    flame_fox = {
+        id = "flame_fox",
+        name = "Flame Fox",
+        element = "Fire",
+        rarity = "Uncommon",
+        description = "A fox that dances through flames.",
+        image = "rbxassetid://12351"
+    },
+    tide_turtle = {
+        id = "tide_turtle",
+        name = "Tide Turtle",
+        element = "Water",
+        rarity = "Uncommon",
+        description = "Turtle that rides the ocean tides.",
+        image = "rbxassetid://12352"
+    },
+
+    -- RARE TIER (Drakeling, Phoenix)
+    drakeling = {
+        id = "drakeling",
+        name = "Drakeling",
+        element = "Fire",
+        rarity = "Rare",
+        description = "A young dragon with fiery breath.",
+        image = "rbxassetid://12353"
+    },
+    phoenix = {
+        id = "phoenix",
+        name = "Phoenix",
+        element = "Fire",
+        rarity = "Rare",
+        description = "A mystical bird that rises from ashes.",
+        image = "rbxassetid://12354"
+    },
+    aqua_serpent = {
+        id = "aqua_serpent",
+        name = "Aqua Serpent",
+        element = "Water",
+        rarity = "Rare",
+        description = "Serpent of the deep blue sea.",
+        image = "rbxassetid://12355"
+    },
+    stone_golem = {
+        id = "stone_golem",
         name = "Stone Golem",
         element = "Earth",
         rarity = "Rare",
-        multiplier = 5,
-        description = "Animated guardian of the mountains."
-    },
-    earth_epic_terra_titan = {
-        id = "earth_epic_terra_titan",
-        name = "Terra Titan",
-        element = "Earth",
-        rarity = "Epic",
-        multiplier = 10,
-        description = "Giant that shapes the earth itself."
-    },
-    earth_legendary_earth_dragon = {
-        id = "earth_legendary_earth_dragon",
-        name = "Earth Dragon",
-        element = "Earth",
-        rarity = "Legendary",
-        multiplier = 50,
-        description = "Dragon born from the planet's core."
+        description = "Animated guardian of the mountains.",
+        image = "rbxassetid://12356"
     },
 
-    -- AIR ELEMENT
-    air_common_gust_sprite = {
-        id = "air_common_gust_sprite",
-        name = "Gust Sprite",
-        element = "Air",
-        rarity = "Common",
-        multiplier = 1,
-        description = "Playful spirit of gentle breezes."
+    -- EPIC TIER (Leviathan)
+    leviathan = {
+        id = "leviathan",
+        name = "Leviathan",
+        element = "Water",
+        rarity = "Epic",
+        description = "A massive sea monster of legend.",
+        image = "rbxassetid://12357"
     },
-    air_uncommon_cloud_wolf = {
-        id = "air_uncommon_cloud_wolf",
-        name = "Cloud Wolf",
-        element = "Air",
-        rarity = "Uncommon",
-        multiplier = 2,
-        description = "Wolf that runs on clouds."
+    inferno_wyrm = {
+        id = "inferno_wyrm",
+        name = "Inferno Wyrm",
+        element = "Fire",
+        rarity = "Epic",
+        description = "Ancient wyrm of eternal flame.",
+        image = "rbxassetid://12358"
     },
-    air_rare_storm_hawk = {
-        id = "air_rare_storm_hawk",
-        name = "Storm Hawk",
-        element = "Air",
-        rarity = "Rare",
-        multiplier = 5,
-        description = "Hawk that rides lightning."
-    },
-    air_epic_thunderbird = {
-        id = "air_epic_thunderbird",
+    thunderbird = {
+        id = "thunderbird",
         name = "Thunderbird",
         element = "Air",
         rarity = "Epic",
-        multiplier = 10,
-        description = "Mythical bird of thunder."
-    },
-    air_legendary_sky_leviathan = {
-        id = "air_legendary_sky_leviathan",
-        name = "Sky Leviathan",
-        element = "Air",
-        rarity = "Legendary",
-        multiplier = 50,
-        description = "Titan that swims through the sky."
+        description = "Mythical bird of thunder.",
+        image = "rbxassetid://12359"
     },
 
-    -- VOID ELEMENT
-    void_common_shadow_blob = {
-        id = "void_common_shadow_blob",
-        name = "Shadow Blob",
-        element = "Void",
-        rarity = "Common",
-        multiplier = 1,
-        description = "A creature of pure darkness."
+    -- LEGENDARY TIER (Kraken, Dragon)
+    kraken = {
+        id = "kraken",
+        name = "Kraken",
+        element = "Water",
+        rarity = "Legendary",
+        description = "The legendary sea monster of the abyss.",
+        image = "rbxassetid://12360"
     },
-    void_uncommon_dark_wolf = {
-        id = "void_uncommon_dark_wolf",
-        name = "Dark Wolf",
-        element = "Void",
-        rarity = "Uncommon",
-        multiplier = 2,
-        description = "Wolf from the shadow realm."
+    dragon = {
+        id = "dragon",
+        name = "Dragon",
+        element = "Fire",
+        rarity = "Legendary",
+        description = "The ultimate fire-breathing beast.",
+        image = "rbxassetid://12361"
     },
-    void_rare_abyss_beast = {
-        id = "void_rare_abyss_beast",
-        name = "Abyss Beast",
-        element = "Void",
-        rarity = "Rare",
-        multiplier = 5,
-        description = "Horror from the endless abyss."
-    },
-    void_epic_void_stalker = {
-        id = "void_epic_void_stalker",
-        name = "Void Stalker",
-        element = "Void",
-        rarity = "Epic",
-        multiplier = 10,
-        description = "Hunter from between dimensions."
-    },
-    void_legendary_chaos_dragon = {
-        id = "void_legendary_chaos_dragon",
+    chaos_dragon = {
+        id = "chaos_dragon",
         name = "Chaos Dragon",
         element = "Void",
         rarity = "Legendary",
-        multiplier = 50,
-        description = "Dragon of pure chaos energy."
+        description = "Dragon of pure chaos energy.",
+        image = "rbxassetid://12362"
     }
 }
 
--- Egg configurations
+-- Egg configurations with rarity weights
 CreatureConfig.Eggs = {
     Basic = {
-        id = "basic",
+        id = "Basic",
         name = "Basic Egg",
         cost = 10,
-        description = "Contains creatures of all elements.",
-        allowedElements = {"Fire", "Water", "Earth", "Air", "Void"},
-        rarityModifiers = {} -- Standard chances
+        description = "A basic egg with common creatures.",
+        rarityWeights = {
+            Common = 70,
+            Uncommon = 25,
+            Rare = 5,
+            Epic = 0,
+            Legendary = 0
+        }
     },
     Fire = {
-        id = "fire",
+        id = "Fire",
         name = "Fire Egg",
         cost = 50,
-        description = "Fire creatures only. Better rare chance!",
-        allowedElements = {"Fire"},
-        rarityModifiers = {
-            Rare = 20,      -- +5% chance
-            Epic = 6,       -- +2% chance
-            Legendary = 1.5 -- +0.5% chance
+        description = "Fire creatures with better odds!",
+        element = "Fire",
+        rarityWeights = {
+            Common = 50,
+            Uncommon = 35,
+            Rare = 12,
+            Epic = 3,
+            Legendary = 0
         }
     },
     Water = {
-        id = "water",
+        id = "Water",
         name = "Water Egg",
         cost = 50,
-        description = "Water creatures only.",
-        allowedElements = {"Water"},
-        rarityModifiers = {}
+        description = "Water creatures with better odds!",
+        element = "Water",
+        rarityWeights = {
+            Common = 50,
+            Uncommon = 35,
+            Rare = 12,
+            Epic = 3,
+            Legendary = 0
+        }
     },
     Earth = {
-        id = "earth",
+        id = "Earth",
         name = "Earth Egg",
         cost = 50,
-        description = "Earth creatures only.",
-        allowedElements = {"Earth"},
-        rarityModifiers = {}
+        description = "Earth creatures with better odds!",
+        element = "Earth",
+        rarityWeights = {
+            Common = 50,
+            Uncommon = 35,
+            Rare = 12,
+            Epic = 3,
+            Legendary = 0
+        }
     },
     Void = {
-        id = "void",
+        id = "Void",
         name = "Void Egg",
         cost = 150,
-        description = "Void creatures with boosted epic/legend rates!",
-        allowedElements = {"Void"},
-        rarityModifiers = {
-            Rare = 20,
-            Epic = 8,       -- +4% chance
-            Legendary = 2   -- +1% chance
+        description = "Void creatures with EPIC odds!",
+        element = "Void",
+        rarityWeights = {
+            Common = 0,
+            Uncommon = 40,
+            Rare = 35,
+            Epic = 20,
+            Legendary = 5
         }
     }
 }
@@ -333,33 +313,108 @@ function CreatureConfig:GetCreaturesByRarity(rarity)
     return result
 end
 
-function CreatureConfig:GetRarityFromRoll(roll, modifiers)
-    -- Apply modifiers if provided
-    local weights = {
-        Common = modifiers and modifiers.Common or self.Rarities.Common.weight,
-        Uncommon = modifiers and modifiers.Uncommon or self.Rarities.Uncommon.weight,
-        Rare = modifiers and modifiers.Rare or self.Rarities.Rare.weight,
-        Epic = modifiers and modifiers.Epic or self.Rarities.Epic.weight,
-        Legendary = modifiers and modifiers.Legendary or self.Rarities.Legendary.weight
-    }
+function CreatureConfig:GetCreaturesByElementAndRarity(element, rarity)
+    local result = {}
+    for id, creature in pairs(self.Creatures) do
+        if creature.element == element and creature.rarity == rarity then
+            table.insert(result, creature)
+        end
+    end
+    return result
+end
+
+-- Roll for rarity based on egg type weights
+function CreatureConfig:RollRarity(eggType)
+    local eggConfig = self.Eggs[eggType]
+    if not eggConfig then
+        eggConfig = self.Eggs.Basic
+    end
     
-    local total = weights.Common + weights.Uncommon + weights.Rare + weights.Epic + weights.Legendary
-    local normalizedRoll = (roll / self.TotalWeight) * total
+    local weights = eggConfig.rarityWeights
+    local totalWeight = 0
     
+    for rarity, weight in pairs(weights) do
+        totalWeight = totalWeight + weight
+    end
+    
+    local rng = Random.new()
+    local roll = rng:NextNumber(0, totalWeight)
     local cumulative = 0
-    cumulative = cumulative + weights.Common
-    if normalizedRoll <= cumulative then return "Common" end
     
-    cumulative = cumulative + weights.Uncommon
-    if normalizedRoll <= cumulative then return "Uncommon" end
+    cumulative = cumulative + (weights.Common or 0)
+    if roll <= cumulative then return "Common" end
     
-    cumulative = cumulative + weights.Rare
-    if normalizedRoll <= cumulative then return "Rare" end
+    cumulative = cumulative + (weights.Uncommon or 0)
+    if roll <= cumulative then return "Uncommon" end
     
-    cumulative = cumulative + weights.Epic
-    if normalizedRoll <= cumulative then return "Epic" end
+    cumulative = cumulative + (weights.Rare or 0)
+    if roll <= cumulative then return "Rare" end
+    
+    cumulative = cumulative + (weights.Epic or 0)
+    if roll <= cumulative then return "Epic" end
     
     return "Legendary"
+end
+
+-- Get a random creature from an egg
+function CreatureConfig:GetRandomCreatureFromEgg(eggType)
+    local eggConfig = self.Eggs[eggType]
+    if not eggConfig then
+        eggConfig = self.Eggs.Basic
+    end
+    
+    -- Roll for rarity
+    local rarity = self:RollRarity(eggType)
+    
+    -- Get creatures matching rarity
+    local candidates = {}
+    
+    if eggConfig.element then
+        -- Element-specific egg
+        candidates = self:GetCreaturesByElementAndRarity(eggConfig.element, rarity)
+    else
+        -- Basic egg - any element
+        candidates = self:GetCreaturesByRarity(rarity)
+        -- Convert to array
+        local temp = {}
+        for _, creature in pairs(candidates) do
+            table.insert(temp, creature)
+        end
+        candidates = temp
+    end
+    
+    -- If no candidates for this rarity/element combo, fall back to any creature of that rarity
+    if #candidates == 0 then
+        local allOfRarity = self:GetCreaturesByRarity(rarity)
+        for _, creature in pairs(allOfRarity) do
+            table.insert(candidates, creature)
+        end
+    end
+    
+    -- Still no candidates? Fall back to common
+    if #candidates == 0 then
+        local commons = self:GetCreaturesByRarity("Common")
+        for _, creature in pairs(commons) do
+            table.insert(candidates, creature)
+        end
+    end
+    
+    -- Pick random candidate
+    local rng = Random.new()
+    local selected = candidates[rng:NextInteger(1, #candidates)]
+    
+    -- Generate random multiplier for this instance
+    local multiplier = self:GetRandomMultiplier(rarity)
+    
+    return {
+        id = selected.id,
+        name = selected.name,
+        element = selected.element,
+        rarity = selected.rarity,
+        multiplier = multiplier,
+        description = selected.description,
+        image = selected.image
+    }
 end
 
 return CreatureConfig
