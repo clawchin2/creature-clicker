@@ -10,22 +10,39 @@ Test code AND world setup. Find every bug, exploit, and broken feature. Be paran
 4. Missing features are bugs
 5. Assume everything is broken until proven otherwise
 
-## LESSON LEARNED (2026-03-01)
-**CRITICAL FAILURE:** Missed missing platform/baseplate.
+## LESSONS LEARNED
 
+### 2026-03-01 - Platform Bug
+**CRITICAL FAILURE:** Missed missing platform/baseplate.
+- Game spawned player into void
+- Fix: Added world geometry validation
+
+### 2026-03-01 - DataStore Offline Bug  
+**CRITICAL FAILURE:** DataStore fails in offline Studio mode.
 **What happened:**
-- Validated code thoroughly
-- Didn't check if player had ground to stand on
-- Game would spawn player into void
-- User caught it, not me
+- DataStoreService:GetDataStore() throws error in offline Studio
+- PlayerData module failed to load
+- Main.server.lua failed to initialize
+- No RemoteEvents created
+- Client UI couldn't connect
+- Game completely broken
 
 **Why it happened:**
-- Focused on scripts (Lua files)
-- Ignored workspace/project structure
-- Assumed basic environment existed
-- Didn't verify Rojo project.json
+- Didn't test in actual Studio environment
+- Assumed DataStore always available
+- No fallback for offline/testing mode
+- pcall only around GetAsync/SetAsync, not around GetDataStore
 
-**Fix:** Expanded validation scope.
+**Fix:** 
+- Wrap GetDataStore in pcall
+- Add LocalStorage fallback for offline mode
+- Create Remotes folder if doesn't exist (was WaitForChild)
+
+**Red flags now checked:**
+- DataStore availability on startup
+- Offline mode fallback
+- RemoteEvents folder creation
+- Module initialization errors
 
 ## VALIDATION CHECKLIST (Updated)
 
